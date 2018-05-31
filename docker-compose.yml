@@ -1,0 +1,28 @@
+#Ports and volumes map HOST:CONTAINER
+
+version: "3.2"
+services:
+  app:
+    container_name: flask-server
+    restart: unless-stopped
+    build: ./app
+    ports:
+      - "3000:3000"
+    links:
+      - mongo
+    volumes:
+      - ./data:/data
+  mongo:
+    container_name: mongo-database
+    image: mongo:latest
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - "27017:27017"
+  nginx:
+    container_name: nginx-reverse-proxy
+    image: nginx:latest
+    volumes:
+      - ./data/static/html:/usr/share/nginx/html
+    ports:
+      - "8080:80"
