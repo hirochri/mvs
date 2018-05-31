@@ -1,4 +1,4 @@
-# Oliver's stuff
+# Oliver and Hiro stuff
 *.dat
 *.json
 *.txt
@@ -7,6 +7,8 @@ saved_category_model/
 saved_model/
 *.hdf5
 *.h5
+*.sw*
+
 
 # MAC
 *.DS_Store

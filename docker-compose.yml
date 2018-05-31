@@ -5,15 +5,18 @@ services:
   app:
     container_name: flask-server
     restart: unless-stopped
-    build: ./app
-    ports:
-      - "3000:3000"
+    build: 
+      context: ./app
+      dockerfile: Dockerfile
+    expose:
+      - "9000"
     links:
       - mongo
     volumes:
       - ./data:/data
   mongo:
     container_name: mongo-database
+    restart: unless-stopped
     image: mongo:latest
     volumes:
       - ./data/db:/data/db
@@ -21,8 +24,14 @@ services:
       - "27017:27017"
   nginx:
     container_name: nginx-reverse-proxy
+    restart: unless-stopped
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile
     image: nginx:latest
+    links:
+      - app
     volumes:
       - ./data/static/html:/usr/share/nginx/html
     ports:
-      - "8080:80"
+      - "80:80"
