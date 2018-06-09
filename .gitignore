@@ -1,6 +1,5 @@
 # Oliver and Hiro stuff
 *.dat
-*.json
 *.txt
 *.csv
 saved_category_model/
