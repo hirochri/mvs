@@ -5,7 +5,6 @@
         {{item}}
         </v-tab>
     </v-tabs>
-    <div color="red"> hello world </div>
 </div>
 </template>
 
@@ -14,7 +13,7 @@ export default {
     data () {
         return {
             menu_items: {
-                "Home": "/home",
+                "Home": "/",
                 "About": "/about",
                 "Services": "/services",
                 "Locations": "/locations",
