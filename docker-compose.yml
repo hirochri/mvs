@@ -31,7 +31,7 @@ services:
     image: nginx:latest
     links:
       - app
-    volumes:
-      - ./data/static/html:/usr/share/nginx/html
+        #volumes:
+      #- ./data/static/html:/usr/share/nginx/html
     ports:
       - "80:80"
