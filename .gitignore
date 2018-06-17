@@ -9,6 +9,8 @@ saved_model/
 *.sw*
 *.mp4
 
+*.lprof
+videos/
 
 # MAC
 *.DS_Store
