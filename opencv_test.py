@@ -7,6 +7,9 @@ import time
 import uuid
 
 
+#from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing import Pool as ThreadPool
+
 #Videos dir -> folder with input video, frames folder and output video
 
 def process_frame(frame):
@@ -14,7 +17,7 @@ def process_frame(frame):
   frame = cv2.flip(frame, 0)
   return frame
 
-@profile
+#@profile
 def process_video(input_file):
   #input_file is just the filename, no full path
 
@@ -49,6 +52,7 @@ def process_video(input_file):
   #out = cv2.VideoWriter(output_filename, fourcc, fps, (width, height))
 
   frame_name = tmp_dir + '/frames/frame%d.png' #Need to account for high frame counts?
+  '''
   for i in range(num_frames):
       # Capture frame-by-frame
       success, frame = cap.read()
@@ -69,6 +73,26 @@ def process_video(input_file):
       #cv2.imshow('frame', frame)
       #if cv2.waitKey(1) & 0xFF == ord('q'):
           #break
+  '''
+  frames = []
+  for i in range(num_frames):
+    _, frame = cap.read()
+    frames.append((i, frame))
+
+  pool = ThreadPool(4)
+  #2->15
+  #4->12
+  #6->13
+  #8->12.5
+  def tmpfunc(_frame):
+    i, frame = _frame
+    frame = process_frame(frame)
+    cv2.imwrite(frame_name % i, frame)
+
+  #pool.map(tmpfunc, frames) #threads
+  pool.map(tmpfunc_top, frames) #Processes
+  pool.close()
+  pool.join()
 
   # When everything done, release the capture
   cap.release()
@@ -79,7 +103,13 @@ def process_video(input_file):
   #Build output video
   output_cmd = 'ffmpeg -framerate {0} -start_number 0 -i {1} -vcodec mpeg4 {2}'.format(fps, frame_name, output_filename)
   print(output_cmd)
-  os.system(output_cmd)
+  #os.system(output_cmd)
+
+def tmpfunc_top(_frame):
+  frame_name = './tmp/frames/frame%d.png' #Need to account for high frame counts?
+  i, frame = _frame
+  frame = process_frame(frame)
+  cv2.imwrite(frame_name % i, frame)
 
 
 if __name__ == '__main__':
