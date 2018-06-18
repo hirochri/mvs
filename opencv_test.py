@@ -87,6 +87,15 @@ def process_video(input_file):
 
   #shutil.rmtree('./videos/' + video_id + '/frames')
 
+#Hacky, can be improved later, assumes 4+ frames
+def four_chunks(lst):
+  m = len(lst) // 2
+  x, y = lst[:m], lst[m:]
+  mx, my = len(x) // 2, len(y) // 2
+  return [x[:mx], x[mx:], y[:my], y[my:]]
+#mylist.txt has lines like: file video.mp4
+#ffmpeg -f concat -i mylist.txt -c copy output.mp4
+
 
 if __name__ == '__main__':
   process_video('control_2.mp4')
