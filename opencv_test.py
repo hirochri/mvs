@@ -5,111 +5,87 @@ from threading import Thread
 from queue import Queue
 import time
 import uuid
+import subprocess
+import shutil
 
-
-#from multiprocessing.dummy import Pool as ThreadPool
-from multiprocessing import Pool as ThreadPool
+from multiprocessing import Pool
+from functools import partial
 
 #Videos dir -> folder with input video, frames folder and output video
+#TODO make this a class
+#Look into better ways of creating tempfiles, since doing it predictably yourself
+#can lead to security vulnerabilities
 
-def process_frame(frame):
-  #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-  frame = cv2.flip(frame, 0)
-  return frame
 
-#@profile
-def process_video(input_file):
-  #input_file is just the filename, no full path
 
-  input_filename, input_filetype = input_file.split('.')
+#Could be interesting to use python library: 'tempfile', not sure about performance though
+def create_directory(input_file):
+  filetype = input_file.split('.')[1]
   video_id = str(uuid.uuid4())
 
   #Rename video and move it into a temporary working directory
-  tmp_dir = './videos/' + video_id
-  os.mkdir(tmp_dir)
-  os.mkdir(tmp_dir + '/frames')
-  tmp_filename = tmp_dir + '/' + video_id + '.input.' + input_filetype
-  os.system(' '.join(['cp', './' + input_file, tmp_filename]))
+  video_dir = './videos/' + video_id
+  os.mkdir(video_dir)
+  os.mkdir(video_dir + '/frames')
+  input_filename = video_dir + '/input.' + filetype
+  os.system(' '.join(['cp', './' + input_file, input_filename]))
+  #Returns video id and input and output file names
+  output_filename = video_dir + '/output.' + filetype
+  return video_id, input_filename, output_filename
 
+def remove_directory(video_id):
+  pass
 
-  cap = cv2.VideoCapture(tmp_filename)
+def get_frames(input_filename):
+  cap = cv2.VideoCapture(input_filename)
   #Potentially need to open here and check that the capture started
   width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
   height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
   num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
   fps = int(cap.get(cv2.CAP_PROP_FPS))
+  seconds = num_frames / fps
 
-  #Both are MPEG4 but with different codecs
-  #Control2 -> MPEG-4
-  #Output -> H.264
-
-  print(num_frames, fps, num_frames / fps) #seconds
-  print(width, height)
-
-  fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-
-  output_filename = tmp_dir + '/' + video_id + '.output.' + input_filetype
-  #out = cv2.VideoWriter(output_filename, fourcc, fps, (width, height))
-
-  frame_name = tmp_dir + '/frames/frame%d.png' #Need to account for high frame counts?
-  '''
+  frames = [None] * num_frames
   for i in range(num_frames):
-      # Capture frame-by-frame
-      success, frame = cap.read()
+    frames[i] = cap.read()[1]
 
-      if not success:
-        print("ran out of frames")
-        break
+  #Release the capture
+  cap.release()
+  cv2.destroyAllWindows()
 
-      # Our operations on the frame come here
-      frame = process_frame(frame)
+  return frames, fps
 
-      #out.write(frame)
-      cv2.imwrite(frame_name % i, frame)
-      #Has quality difference 40.7 mb -> 5.8 mb
-      #cv2.imshow('Frame', frame)
+def process_frames(frame_name, frames):
+  modify_frame= partial(_modify_frame, frame_name=frame_name)
 
-      # Display the resulting frame
-      #cv2.imshow('frame', frame)
-      #if cv2.waitKey(1) & 0xFF == ord('q'):
-          #break
-  '''
-  frames = []
-  for i in range(num_frames):
-    _, frame = cap.read()
-    frames.append((i, frame))
-
-  pool = ThreadPool(4)
-  #2->15
-  #4->12
-  #6->13
-  #8->12.5
-  def tmpfunc(_frame):
-    i, frame = _frame
-    frame = process_frame(frame)
-    cv2.imwrite(frame_name % i, frame)
-
-  #pool.map(tmpfunc, frames) #threads
-  pool.map(tmpfunc_top, frames) #Processes
+  pool = Pool(4)
+  pool.map(modify_frame, enumerate(frames)) #Processes
   pool.close()
   pool.join()
 
-  # When everything done, release the capture
-  cap.release()
-  #out.release()
-  cv2.destroyAllWindows()
+def _modify_frame(_frame, frame_name):
+  num, frame = _frame
+  frame = apply_changes(frame)
+  cv2.imwrite(frame_name % num, frame)
 
+def apply_changes(frame):
+  frame = cv2.flip(frame, 0)
+  return frame
+
+def process_video(input_file):
+  #input_file is just the filename, no full path
+  video_id, input_filename, output_filename = create_directory(input_file)
+
+  frames, fps = get_frames(input_filename)
+  frame_name = './videos/'+ video_id + '/frames/frame%04d.png' #Need to account for high frame counts?
+
+  process_frames(frame_name, frames)
 
   #Build output video
   output_cmd = 'ffmpeg -framerate {0} -start_number 0 -i {1} -vcodec mpeg4 {2}'.format(fps, frame_name, output_filename)
-  print(output_cmd)
-  #os.system(output_cmd)
+  subprocess.Popen(output_cmd.split()).wait()
 
-def tmpfunc_top(_frame):
-  frame_name = './tmp/frames/frame%d.png' #Need to account for high frame counts?
-  i, frame = _frame
-  frame = process_frame(frame)
-  cv2.imwrite(frame_name % i, frame)
+  #shutil.rmtree('./videos/' + video_id + '/frames')
 
 
 if __name__ == '__main__':
