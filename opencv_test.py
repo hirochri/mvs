@@ -11,68 +11,114 @@ import shutil
 from multiprocessing import Pool
 from functools import partial
 
+from werkzeug.datastructures import FileStorage
+import tempfile
+
 #Videos dir -> folder with input video, frames folder and output video
 #TODO make this a class
 #Look into better ways of creating tempfiles, since doing it predictably yourself
 #can lead to security vulnerabilities
 #Why bash scripts so much slower when called from python?
 
-def create_directory(input_file):
-  filetype = input_file.split('.')[1]
-  video_id = str(uuid.uuid4())
 
-  subprocess.check_output('sh create_directory.sh {0} {1} {2}'.format(video_id, input_file, filetype), shell=True)
 
-  #Returns video id and input and output file names
-  return video_id, filetype
+#XXX
+#with tempfile.TemporaryDirectory() as dirpath:
+#XXX
+class VideoProcessor:
+  def __init__(self, input_file):
+    #input_file is just the filename, no full path
+    self.input_file = input_file
+    self.filetype = input_file.split('.')[1]
+    self.video_id = str(uuid.uuid4())
+    self.fps = None
 
-def get_frames(video_id, filetype):
-  cap = cv2.VideoCapture('./videos/{0}/input.{1}'.format(video_id, filetype))
-  #Potentially need to open here and check that the capture started
-  width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-  height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-  num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-  fps = int(cap.get(cv2.CAP_PROP_FPS))
-  seconds = num_frames / fps
+  @profile
+  def setup(self):
+    subprocess.check_output('sh create_directory.sh {0} {1} {2}'.format(self.video_id, self.input_file, self.filetype).split())
 
-  frames = [None] * num_frames
-  for i in range(num_frames):
-    frames[i] = cap.read()[1]
+  @profile
+  def altsetup(self):
+    f = open('control_2.mp4', 'rb')
+    #Simulates how file comes in via flask/werkzeug
+    file = FileStorage(f)
 
-  #Release the capture
-  cap.release()
-  cv2.destroyAllWindows()
+    with tempfile.TemporaryDirectory() as dirpath:
+      file.save(os.path.join(dirpath, 'input.mp4'))
 
-  return frames, fps
+    f.close()
 
-def process_frames(video_id, frames):
-  with Pool(4) as pool:
-    modify_frame = partial(_modify_frame, video_id=video_id)
-    pool.map(modify_frame, enumerate(frames)) #Processes
+  #Sampling options: frames per sec/minute/hour
+  def get_frames(self):
+    cap = cv2.VideoCapture('./videos/{0}/input.{1}'.format(self.video_id, self.filetype))
+    #Potentially need to open here and check that the capture started
+    #width, height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    self.fps = int(cap.get(cv2.CAP_PROP_FPS))
+    seconds = num_frames / self.fps
 
-def _modify_frame(_frame, video_id):
-  num, frame = _frame
-  frame = apply_changes(frame)
-  cv2.imwrite('./videos/%s/frames/frame%04d.bmp' % (video_id, num), frame)
+    frames = [None] * num_frames
+    for i in range(num_frames):
+      frames[i] = cap.read()[1]
 
-def apply_changes(frame):
-  return cv2.flip(frame, 0)
+    #Release the capture
+    cap.release()
 
-def process_video(input_file):
-  #input_file is just the filename, no full path
-  video_id, filetype = create_directory(input_file)
+    return frames
 
-  frames, fps = get_frames(video_id, filetype)
-  #.bmp has no compression, so all image files will be the same size, but writing is faster
-  #.png has compression so file sizes vary, but takes longer to write
+  def generate_frames(self):
+    cap = cv2.VideoCapture('./videos/{0}/input.{1}'.format(self.video_id, self.filetype))
+    num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-  process_frames(video_id, frames)
+    for _ in range(num_frames):
+      yield cap.read()[1]
 
-  output_cmd = 'sh build_output.sh {0} {1} {2}'.format(video_id, fps, filetype)
-  subprocess.check_output(output_cmd, shell=True)
+    #Release the capture
+    cap.release()
+
+  def process_frames(self, frames):
+    print('with pool')
+    with Pool(4) as pool: #Could also use cv2.getNumberOfCPUs()
+      pool.map(self.modify_frame, enumerate(frames)) #Processes
+
+  def process_frames_iterative(self, frames):
+    print('iterative')
+    for i, frame in enumerate(frames):
+      self.modify_frame((i, frame))
+
+  def modify_frame(self, _frame):
+    num, frame = _frame
+    frame = self.apply_changes(frame)
+    cv2.imwrite('./videos/%s/frames/frame%04d.bmp' % (self.video_id, num), frame)
+
+  def apply_changes(self, frame):
+    return cv2.flip(frame, 0)
+
+  def gen_process_video(self):
+    #.bmp has no compression, so all image files will be the same size, but writing is faster
+    #.png has compression so file sizes vary, but takes longer to write
+    frames = self.generate_frames()
+    self.process_frames_iterative(frames)
+    #self.process_frames(frames)
+
+    return 10
+
+  def cleanup(self):
+    output_cmd = 'sh build_output.sh {0} {1} {2}'.format(self.video_id, self.fps, self.filetype)
+    subprocess.check_output(output_cmd.split())
+
+@profile
+def main():
+  vp = VideoProcessor('control_2.mp4')
+  vp.setup()
+  vp.altsetup()
+  #vp.gen_process_video()
+  #vp.cleanup()
+
 
 if __name__ == '__main__':
-  process_video('control_2.mp4')
+  main()
+
 #Seems like opencv faster at reading frames than using ffmpeg to split into frames (disk time?)
 #Seems like ffmpeg faster at building a video out of frames than opencv writing
 #Could try creating images out of frames and stitching them together using 

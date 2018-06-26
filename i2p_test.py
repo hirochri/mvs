@@ -11,7 +11,7 @@ cap = cv2.VideoCapture('./control_2.mp4')
 num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 fps = int(cap.get(cv2.CAP_PROP_FPS))
 
-cmd = 'ffmpeg -f image2pipe -vcodec png -framerate 10 -i - -vcodec mpeg4 -framerate 10 video.mp4'
+cmd = 'ffmpeg -f image2pipe -vcodec png -framerate 10 -i - -vcodec mpeg4 -framerate 10 -preset ultrafast i2p_video.mp4'
 p = Popen(cmd.split(), stdin=PIPE)
 for _ in range(num_frames):
   frame = cap.read()[1]
