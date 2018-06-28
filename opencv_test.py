@@ -16,6 +16,7 @@ import tempfile
 
 from threading import Thread
 from queue import Queue
+from subprocess import Popen, PIPE
 
 #Videos dir -> folder with input video, frames folder and output video
 #TODO make this a class
@@ -46,8 +47,7 @@ class VideoProcessor:
 
     ###################
     #self.gen_full(file)
-    #self.gen_full2(file)
-    self.gen_full3(file)
+    self.gen_full2(file)
     ###################
 
     f.close()
@@ -79,7 +79,7 @@ class VideoProcessor:
         frame = self.apply_changes(frame)
         cv2.imwrite(framename % i, frame)
 
-      cmd = 'ffmpeg -framerate 10 -start_number 0 -i {0} -vcodec mpeg4 -preset ultrafast videos/iterative_output.mp4'.format(framename)
+      cmd = 'ffmpeg -y -framerate 10 -start_number 0 -i {0} -vcodec mpeg4 -preset ultrafast videos/iterative_output.mp4'.format(framename)
       os.system(cmd)
 
   def gen_full2(self, file):
@@ -87,13 +87,12 @@ class VideoProcessor:
       filename = os.path.join(dirpath, 'input.mp4')
       file.save(filename)
 
-      self.fps = 10 #self.fps = int(cap.get(cv2.CAP_PROP_FPS))
+      fps = 10 #int(cap.get(cv2.CAP_PROP_FPS))
+      w, h = 1266, 944 #int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
       def generate_frames():
         cap = cv2.VideoCapture(filename)
         num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        width, height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        print(width, height)
         #seconds = num_frames / self.fps
 
         for _ in range(num_frames):
@@ -102,75 +101,14 @@ class VideoProcessor:
         #Release the capture
         cap.release()
 
-
-      os.mkdir(os.path.join(dirpath, 'frames'))
-      framename = os.path.join(dirpath, 'frames', 'frame%04d.bmp')
-
-      #####
-      fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-      #w, h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-      w, h = 1266, 944
-      out = cv2.VideoWriter('videos/python_output.mp4', fourcc, self.fps, (w, h))
-      #####
+      #y->overwrite input files, an->no audio
+      cmd = 'ffmpeg -y -f rawvideo -vcodec rawvideo -s {0}x{1} -pix_fmt rgb24 -r 10 -i - -an -vcodec mpeg4 hirotest.mp4'.format(w,h)
+      p = Popen(cmd.split(), stdin=PIPE)
 
       for frame in generate_frames():
-        out.write(self.apply_changes(frame))
+        p.stdin.write(self.apply_changes(frame).tostring())
 
-      out.release()
-
-  def gen_full3(self, file):
-    with tempfile.TemporaryDirectory() as dirpath:
-      filename = os.path.join(dirpath, 'input.mp4')
-      file.save(filename)
-
-      self.fps = 10 #self.fps = int(cap.get(cv2.CAP_PROP_FPS))
-
-      def generate_frames():
-        cap = cv2.VideoCapture(filename)
-        num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        width, height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        print(width, height)
-        #seconds = num_frames / self.fps
-
-        for _ in range(num_frames):
-          yield cap.read()[1]
-
-        #Release the capture
-        cap.release()
-
-
-      os.mkdir(os.path.join(dirpath, 'frames'))
-      framename = os.path.join(dirpath, 'frames', 'frame%04d.bmp')
-
-      q = Queue()
-
-      #####
-      def worker():
-        fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-        #w, h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        w, h = 1266, 944
-        out = cv2.VideoWriter('videos/python_output.mp4', fourcc, self.fps, (w, h))
-
-        time.sleep(1)
-        while not q.empty():
-          frame = q.get()
-          out.write(frame)
-          q.task_done()
-
-        out.release()
-
-      #####
-      t = Thread(target=worker)
-      #t.daemon = True
-      t.start()
-
-      for frame in generate_frames():
-        frame = self.apply_changes(frame)
-        q.put(frame)
-
-      q.join()
-      t.join()
-
+      time.sleep(1)
   #Sampling options: frames per sec/minute/hour
   def get_frames(self):
     cap = cv2.VideoCapture('./videos/{0}/input.{1}'.format(self.video_id, self.filetype))

@@ -22,7 +22,9 @@ for _ in range(num_frames):
 
 
 #y = overwrite input files
-cmd = 'ffmpeg -y -f rawvideo -vcodec rawvideo -s {0}x{1} -pix_fmt rgb24 -r 10 -i - -vcodec mpeg4 hirotest.mp4'.format(w,h)
+#an for no audio
+print(w, h)
+cmd = 'ffmpeg -y -f rawvideo -vcodec rawvideo -s {0}x{1} -pix_fmt rgb24 -r 10 -i - -an -vcodec mpeg4 hirotest.mp4'.format(w,h)
 p = Popen(cmd.split(), stdin=PIPE)
 for i in range(num_frames):
   frame = cap.read()[1]
