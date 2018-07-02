@@ -58,6 +58,17 @@ class VideoProcessor:
       #cmd = scmd.split()
       p = Popen(cmd, stdin=PIPE)
 
+      #1 frame per min -> 30 fps
+      #Select on both sides
+      #Email from form
+      #4 videos -> 1 video with 4 frames
+      #Save raws
+      #Map multiple functions over raw
+      #generate data while processing freames
+      #func(frame, timestamp) -> number
+      #keep time, number pairs together
+      #charts on top, videos on bottom
+      #docker different "blocks", so not pip install every time python file changes, see if something similar for NPM
       for frame in frame_generator():
         p.stdin.write(self.apply_changes(frame).tostring())
         #apply_changes to generator or here?
