@@ -1,8 +1,12 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 from pymongo import MongoClient
+from flask_cors import CORS
+import json
+import yagmail
 
 # Define server app.
 app = Flask(__name__)
+cors = CORS(app, resources={"/api/*": {"origins": "*"}})
 
 @app.route("/api/")
 def hello_world():
@@ -11,6 +15,25 @@ def hello_world():
   users.insert_one({"username": "hirochri"})
 
   return get_db_name() + ' ' + str(users.count()) + ' API:Hello World from Flask'
+
+@app.route("/api/contact/", methods=['POST'])
+def send_email():
+  data = request.get_json()
+  print(data)
+  name, email, subject, message = data['name'], data['email'], data['subject'], data['message']
+
+  #TODO Handle email validation server side
+
+  full_message = '\n'.join(['From: {0} {1}'.format(name, email), 'Subject: {0}'.format(subject), 'Message: \n{0}'.format(message)])
+  print(full_message)
+
+  with open('contact.txt', 'r') as f:
+    bot_email, bot_password, receiver_email  = f.readline().split()
+
+  with yagmail.SMTP(bot_email, bot_password) as yag:
+    yag.send(to=receiver_email, subject=subject, contents=full_message)
+
+  return '', 200
 
 #Workaround for now
 def get_db_name():
