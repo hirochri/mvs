@@ -24,6 +24,7 @@ export default {
         return {
             menu_items: {
                 "Home": "/",
+                "File Upload": "/fileupload",
                 "About": "/about",
                 "Services": "/services",
                 "Locations": "/locations",

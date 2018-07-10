@@ -3,10 +3,14 @@ from pymongo import MongoClient
 from flask_cors import CORS
 import json
 import yagmail
+import os
 
 # Define server app.
 app = Flask(__name__)
 cors = CORS(app, resources={"/api/*": {"origins": "*"}})
+
+upload_folder = '../data/uploads/'
+app.config['UPLOAD_FOLDER'] = upload_folder
 
 @app.route("/api/")
 def hello_world():
@@ -32,6 +36,19 @@ def send_email():
 
   with yagmail.SMTP(bot_email, bot_password) as yag:
     yag.send(to=receiver_email, subject=subject, contents=full_message)
+
+  return '', 200
+
+@app.route("/api/video/", methods=['POST'])
+def video_test():
+  print('VIDEO TEST')
+  print(request)
+  file_obj = request.files
+  print(file_obj)
+  file = file_obj['file']
+  file.save('../data/uploads/hirouploadtest.mp4')
+  print(os.getcwd())
+
 
   return '', 200
 
