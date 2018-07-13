@@ -69,9 +69,15 @@ if (process.env.NODE_ENV === 'production') {
         }),
         new webpack.optimize.UglifyJsPlugin({
             sourceMap: true,
+            // For debugging during development
+            compress: false,
+            mangle: false,
+            //
+            /*
             compress: {
                 warnings: false
             }
+            */
         }),
         new webpack.LoaderOptionsPlugin({
             minimize: true

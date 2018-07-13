@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file, make_response
 from pymongo import MongoClient
 from flask_cors import CORS
 import json
@@ -41,16 +41,22 @@ def send_email():
 
 @app.route("/api/video/", methods=['POST'])
 def video_test():
-  print('VIDEO TEST')
-  print(request)
-  file_obj = request.files
-  print(file_obj)
-  file = file_obj['file']
-  file.save('../data/uploads/hirouploadtest.mp4')
-  print(os.getcwd())
-
+  #TODO store uploaded videos and results by .. user?
+  #Get videos grouped together from same upload somehow
+  #Multiple files can be sent in one request
+  for file_key in request.files:
+    print(file_key)
+    file = request.files[file_key]
+    file.save('../data/uploads/test.mp4')
 
   return '', 200
+
+@app.route("/api/test/", methods=['GET'])
+def testfunc():
+  response = make_response(send_file('../data/uploads/test.mp4', mimetype='video/mp4'))
+  response.headers['Content-Disposition'] = 'inline'
+
+  return response
 
 #Workaround for now
 def get_db_name():

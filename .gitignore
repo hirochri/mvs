@@ -9,6 +9,7 @@ saved_model/
 *.sw*
 *.mp4
 node_modules/
+data/uploads
 
 *.lprof
 videos/

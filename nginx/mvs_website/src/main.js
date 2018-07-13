@@ -33,9 +33,11 @@ const router = new VueRouter({
     routes: routes,
 })
 
-new Vue({
+var vm = new Vue({
     el: '#app',
     store: store,
     router: router,
     render: h => h(App)
 })
+
+global.vm = vm
