@@ -39,17 +39,23 @@ def send_email():
 
   return '', 200
 
-@app.route("/api/video/", methods=['POST'])
+@app.route("/api/video/upload", methods=['POST'])
 def video_test():
   #TODO store uploaded videos and results by .. user?
   #Get videos grouped together from same upload somehow
   #Multiple files can be sent in one request
-  for file_key in request.files:
-    print(file_key)
-    file = request.files[file_key]
-    file.save('../data/uploads/test.mp4')
+
+  uuid = request.form['uuid']
+  print(uuid)
+  filename = '../data/uploads/' + uuid + '.mp4'
+  file = request.files['file']
+  file.save(filename)
 
   return '', 200
+
+@app.route("/api/video/remove/<uuid>")
+def video_remove(uuid):
+  pass
 
 @app.route("/api/test/", methods=['GET'])
 def testfunc():
