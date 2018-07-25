@@ -3,20 +3,23 @@
     <p>File Upload</p>
     <vue-dropzone id="dropzone" ref="dzone" v-bind:options="dropOptions"></vue-dropzone>
     <div>
-        <li v-for="uf in uploaded_files">
-            {{uf.upload.filename}}
-        </li>
+        <p>Current files</p>
+        <div>
+            <file-card v-for="cf in current_files" v-bind:key="cf.upload.uuid" v-bind:file="cf" v-on:remove-file="removeFunc"></file-card>
+        </div>
     </div>
 </div>
 </template>
 
 <script>
 import vueDropzone from "vue2-dropzone"
+import FileCard from './FileCard.vue'
+import axios from 'axios'
 
 export default {
     data () {
         return {
-            uploaded_files: [],
+            current_files: [],
             dropOptions: {
                 url: "http://127.0.0.1:3000/api/video/upload",
                 maxFilesize: 50, //mb,
@@ -31,19 +34,23 @@ export default {
         }
     },
     components: {
-        vueDropzone
+        'vueDropzone': vueDropzone,
+        'file-card': FileCard,
     },
     methods: {
-        processFiles: function() {
-            console.log(this.$refs.dzone.dropzone.files)
-            this.$refs.dzone.processQueue()
+        removeFunc: function(uuid) {
+            this.current_files = this.current_files.filter(function(file) {
+                return file.upload.uuid !== uuid
+            })
 
-
+            axios.delete('http://127.0.0.1:3000/api/video/remove/' + uuid)
+            .then(res => {
+                console.log(res)
+            })
         },
         successFunc: function(file, response) {
-            console.log('dongs')
-            console.log(this.uploaded_files)
-            this.uploaded_files.push(file)
+            console.log(file)
+            this.current_files.push(file)
             this.$refs.dzone.removeFile(file)
         },
     }

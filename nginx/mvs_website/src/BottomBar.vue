@@ -64,7 +64,6 @@ export default {
     methods: {
         handleSubmit(event) {
             //Handle email validation client side
-            console.log("ayy")
             console.log(event)
             console.log(this.contact.name)
             axios.post('http://127.0.0.1:3000/api/contact/', this.contact)

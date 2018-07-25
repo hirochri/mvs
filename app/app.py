@@ -39,6 +39,8 @@ def send_email():
 
   return '', 200
 
+upload_folder = '../data/uploads/'
+
 @app.route("/api/video/upload", methods=['POST'])
 def video_test():
   #TODO store uploaded videos and results by .. user?
@@ -47,15 +49,46 @@ def video_test():
 
   uuid = request.form['uuid']
   print(uuid)
-  filename = '../data/uploads/' + uuid + '.mp4'
+  filename = upload_folder + uuid + '.mp4'
   file = request.files['file']
   file.save(filename)
 
   return '', 200
 
-@app.route("/api/video/remove/<uuid>")
+#TODO better folder structure, mark if original or processed
+#By user id or something?
+
+@app.route("/api/video/get_all", methods=['GET'])
+def video_getall():
+  uuids = []
+  for filename in os.listdir(upload_folder):
+    uuid = filename.split('.')[0]
+    uuids.append(uuid)
+
+  return json.dumps(uuids), 200
+
+@app.route("/api/video/remove/<uuid>", methods=['DELETE'])
 def video_remove(uuid):
-  pass
+  filename = '.'.join([uuid, 'mp4'])
+  full_path = upload_folder + '/' + filename
+
+  if os.path.exists(full_path):
+    os.remove(full_path)
+    return 'Removed ' + filename, 200
+  else:
+    return filename + ' not found and not removed', 404
+
+'''
+Video stages -> uploaded, processed, 
+
+TODO
+* Upload video
+* Remove video
+* Process video
+* Compose videos together
+
+
+'''
 
 @app.route("/api/test/", methods=['GET'])
 def testfunc():
