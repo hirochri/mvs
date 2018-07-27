@@ -4,6 +4,7 @@ from flask_cors import CORS
 import json
 import yagmail
 import os
+import time
 
 # Define server app.
 app = Flask(__name__)
@@ -81,8 +82,12 @@ def video_remove(uuid):
 @app.route("/api/video/process/<uuid>", methods=["POST"])
 def video_process(uuid):
   #TODO file check abstraction
+  #Keep track of already processed vs allow reprocessing with different options?
   filename = '.'.join([uuid, 'mp4'])
   full_path = upload_folder + '/' + filename
+  print('process', full_path)
+
+  time.sleep(3)
 
   if os.path.exists(full_path):
     print('Processing', uuid)
