@@ -5,6 +5,7 @@ import json
 import yagmail
 import os
 import time
+import cv2
 
 # Define server app.
 app = Flask(__name__)
@@ -53,6 +54,13 @@ def video_upload():
   filename = upload_folder + uuid + '.mp4'
   file = request.files['file']
   file.save(filename)
+
+  cap = cv2.VideoCapture(filename)
+  success, frame = cap.read()
+  while not success:
+    success, frame = cap.read()
+
+  cv2.imwrite(upload_folder + uuid + '.thumbnail.jpg', frame)
 
   return '', 200
 

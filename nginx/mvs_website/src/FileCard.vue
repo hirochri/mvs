@@ -3,28 +3,26 @@
     <v-layout>
     <v-flex xs12 sm6 offset-sm3>
     <v-card>
-    <!--
-        <v-card-media
-        src="https://cdn.vuetifyjs.com/images/cards/desert.jpg"
-        height="200px"
-        ></v-card-media>
-    -->
+    <div class="imgcontainer">
+        <v-card-media v-bind:src="thumbnailSource" height="200px"></v-card-media>
+        <div class="centered">
+            <h3 class="headline mb-0">{{file.upload.filename}}</h3>
+        </div>
+    </div>
 
+    <!--
     <v-card-title primary-title>
-    <h3 class="headline mb-0">{{file.upload.filename}} {{file.upload.uuid}}</h3>
+    <h3 class="headline mb-0">{{file.upload.filename}}</h3>
     </v-card-title>
-
-    <!--
-        <v-card-actions>
-        <v-btn flat color="orange">Share</v-btn>
-        <v-btn flat color="orange">Explore</v-btn>
-        </v-card-actions>
     -->
-    <v-btn @click="confirmRemoveFunc" color="error">Delete Video</v-btn>
-    <v-btn :loading="processing" :disabled="processing" color="success" @click.native="processFunc" >
-        Process Video
-        <span slot="loader">Processing...</span>
-    </v-btn>
+
+    <v-card-actions>
+        <v-btn @click="confirmRemoveFunc" color="error">Delete Video</v-btn>
+        <v-btn :loading="processing" :disabled="processing" color="success" @click.native="processFunc" >
+            Process Video
+            <span slot="loader">Processing...</span>
+        </v-btn>
+    </v-card-actions>
 
     </v-card>
     </v-flex>
@@ -42,6 +40,12 @@ export default {
         }
     },
     props: ['file'],
+    computed: {
+        thumbnailSource: function() {
+            //Python server running in /data/uploads until ngnix serves static
+            return "http://127.0.0.1:8888/" + this.file.upload.uuid + ".thumbnail.jpg"
+        }
+    },
     methods: {
         confirmRemoveFunc: function() {
             if(confirm('Are you sure you want to remove ' + this.file.upload.filename + '?')){
@@ -73,6 +77,20 @@ export default {
 
 </script>
 
-<style></style>
+<style>
+.imgcontainer {
+    position: relative;
+    text-align: center;
+    color: white;
+}
+.centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+</style>
 
 
