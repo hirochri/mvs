@@ -42,7 +42,7 @@ def send_email():
 upload_folder = '../data/uploads/'
 
 @app.route("/api/video/upload", methods=['POST'])
-def video_test():
+def video_upload():
   #TODO store uploaded videos and results by .. user?
   #Get videos grouped together from same upload somehow
   #Multiple files can be sent in one request
@@ -58,7 +58,7 @@ def video_test():
 #TODO better folder structure, mark if original or processed
 #By user id or something?
 
-@app.route("/api/video/get_all", methods=['GET'])
+@app.route("/api/video/getall", methods=['GET'])
 def video_getall():
   uuids = []
   for filename in os.listdir(upload_folder):
@@ -77,6 +77,18 @@ def video_remove(uuid):
     return 'Removed ' + filename, 200
   else:
     return filename + ' not found and not removed', 404
+
+@app.route("/api/video/process/<uuid>", methods=["POST"])
+def video_process(uuid):
+  #TODO file check abstraction
+  filename = '.'.join([uuid, 'mp4'])
+  full_path = upload_folder + '/' + filename
+
+  if os.path.exists(full_path):
+    print('Processing', uuid)
+    return 'Processed ' + filename, 200
+  else:
+    return filename + ' not found and not processed', 404
 
 '''
 Video stages -> uploaded, processed, 

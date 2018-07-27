@@ -21,6 +21,7 @@
                 </v-card-actions>
                 -->
                 <button @click="$emit('remove-file', file.upload.uuid)">DELETE</button>
+                <button @click="processFunc">PROCESS</button>
             </v-card>
         </v-flex>
     </v-layout>
@@ -28,13 +29,24 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
     data () {
         return {
         }
     },
     props: ['filename', 'file'],
+    methods: {
+        processFunc: function() {
+            axios.post('http://127.0.0.1:3000/api/video/process/', this.file.upload.uuid)
+            .then(res => {
+                console.log(res)
+            })
+        }
+    }
 }
+
 </script>
 
 <style></style>
