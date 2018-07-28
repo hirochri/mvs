@@ -11,16 +11,25 @@
     </div>
 
     <!--
-    <v-card-title primary-title>
-    <h3 class="headline mb-0">{{file.upload.filename}}</h3>
-    </v-card-title>
+        <v-card-title primary-title>
+        <h3 class="headline mb-0">{{file.upload.filename}}</h3>
+        </v-card-title>
     -->
+
+    <v-flex xs12 sm12 d-flex>
+    <p>Processing Options</p>
+    <v-text-field v-bind:placeholder="originalSamplingRate" v-model="samplingRate"></v-text-field>
+    <v-select
+            v-bind:items="samplingOptions"
+            v-model="samplingOptionSelected"
+            ></v-select>
+    </v-flex>
 
     <v-card-actions>
         <v-btn @click="confirmRemoveFunc" color="error">Delete Video</v-btn>
         <v-btn :loading="processing" :disabled="processing" color="success" @click.native="processFunc" >
-            Process Video
-            <span slot="loader">Processing...</span>
+        Process Video
+        <span slot="loader">Processing...</span>
         </v-btn>
     </v-card-actions>
 
@@ -37,6 +46,14 @@ export default {
     data () {
         return {
             processing: false,
+            originalSamplingRate: this.file.originalFps,
+            samplingRate: this.file.originalFps,
+            samplingOptionSelected: 0,
+            samplingOptions: [
+                { text: 'Frames per second', value: 0 },
+                { text: 'Frames per minute', value: 1 },
+                { text: 'Frames per hour', value: 2 },
+            ],
         }
     },
     props: ['file'],
@@ -56,7 +73,10 @@ export default {
             this.processing = true
 
             console.log(this.file.upload.uuid)
-            axios.post('http://127.0.0.1:3000/api/video/process/' + this.file.upload.uuid)
+            axios.post('http://127.0.0.1:3000/api/video/process/' + this.file.upload.uuid, {
+                samplingRate: this.samplingRate,
+                samplingOption: this.samplingOptionSelected
+            })
                 .then(function(response) {
                     //Handle success
                     this.processing = false

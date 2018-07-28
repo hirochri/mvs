@@ -50,6 +50,7 @@ export default {
         },
         successFunc: function(file, response) {
             console.log(file)
+            file.originalFps = parseInt(response)
             this.current_files.push(file)
             this.$refs.dzone.removeFile(file)
         },

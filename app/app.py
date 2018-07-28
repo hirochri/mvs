@@ -61,8 +61,9 @@ def video_upload():
     success, frame = cap.read()
 
   cv2.imwrite(upload_folder + uuid + '.thumbnail.jpg', frame)
+  fps = int(cap.get(cv2.CAP_PROP_FPS))
 
-  return '', 200
+  return str(fps), 200
 
 #TODO better folder structure, mark if original or processed
 #By user id or something?
@@ -94,6 +95,9 @@ def video_process(uuid):
   filename = '.'.join([uuid, 'mp4'])
   full_path = upload_folder + '/' + filename
   print('process', full_path)
+  data = request.get_json()
+  rate, option = data['samplingRate'], data['samplingOption']
+  print(rate, option)
 
   time.sleep(3)
 
