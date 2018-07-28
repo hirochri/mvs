@@ -12,19 +12,6 @@ class VideoProcessor:
     self.funcs = funcs
     self.generated_data = {}
 
-  def test_run(self):
-    test_file = 'control_2.mp4'
-    f = open(test_file, 'rb')
-    #Simulates how file comes in via flask/werkzeug
-    file = FileStorage(f)
-
-    ###################
-    #self.process_video(file, 10, 0)
-    self.process_video(file, 5, 0, 5)
-    ###################
-
-    f.close()
-
   def get_sampling_fps(self, sampling_rate, sampling_time):
     #sampling_time = 0 for seconds, 1 for minutes, 2 for hours
 
@@ -75,41 +62,39 @@ class VideoProcessor:
 
     return dimensions, generator
 
-  def process_video(self, file, sampling_rate, sampling_time, output_fps=10):
-    with tempfile.TemporaryDirectory() as dirpath:
-      filename = os.path.join(dirpath, 'input.mp4')
-      file.save(filename)
-      #TODO save original input to same spot as output
+  def process_video(self, input_filename, sampling_rate, sampling_time, output_fps=10):
+    #TODO decide how to work with filenames/folders.. only pass uuids?
+    output_filename = 'hirotest.mp4'
 
-      frame_dimensions, frame_generator = self.create_frame_generator(filename, sampling_rate, sampling_time)
+    frame_dimensions, frame_generator = self.create_frame_generator(input_filename, sampling_rate, sampling_time)
 
-      cmd = [
-          'ffmpeg', '-y', #Overwrite input files
-          '-f', 'rawvideo', 
-          '-vcodec', 'rawvideo',
-          '-s', '{0}x{1}'.format(*frame_dimensions),
-          '-pix_fmt', 'rgb24',
-          '-r', str(output_fps),
-          '-i', '-',
-          '-an', #Expect no audio
-          '-vcodec', 'mpeg4',
-          'hirotest.mp4'
-      ]
+    cmd = [
+        'ffmpeg', '-y', #Overwrite input files
+        '-f', 'rawvideo', 
+        '-vcodec', 'rawvideo',
+        '-s', '{0}x{1}'.format(*frame_dimensions),
+        '-pix_fmt', 'rgb24',
+        '-r', str(output_fps),
+        '-i', '-',
+        '-an', #Expect no audio
+        '-vcodec', 'mpeg4',
+        output_filename
+    ]
 
-      p = Popen(cmd, stdin=PIPE)
+    p = Popen(cmd, stdin=PIPE)
 
-      for num, frame in frame_generator():
-        print('NUM', num)
-        #Generate data for sampled frame
+    for num, frame in frame_generator():
+      print('NUM', num)
+      #Generate data for sampled frame
 
-        #Apply functions to sampled frame
-        frame = self.apply_functions(frame)
+      #Apply functions to sampled frame
+      frame = self.apply_functions(frame)
 
-        #Frame composition stuff?
+      #Frame composition stuff?
 
-        p.stdin.write(frame.tostring())
+      p.stdin.write(frame.tostring())
 
-      #XXX read up on how Popen knows when stdin ends
+    #XXX read up on how Popen knows when stdin ends
 
   def apply_functions(self, frame):
     return reduce(lambda res, func: func(res), self.funcs, frame)
@@ -119,4 +104,4 @@ def flip_frame(frame):
 
 if __name__ == '__main__':
   vp = VideoProcessor([flip_frame, flip_frame])
-  vp.test_run()
+  vp.process_video('control_2.mp4', 5, 0, 5)
