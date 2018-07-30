@@ -28,7 +28,7 @@ services:
     build: 
       context: ./nginx
       dockerfile: Dockerfile
-    image: nginx:latest
+    #image: nginx:latest #Since build is specified, it will name the resulting build this and overwrite stuff
     links:
       - app
         #volumes:

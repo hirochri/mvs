@@ -10,6 +10,7 @@ saved_model/
 *.mp4
 node_modules/
 data/uploads
+nginx/mvs_website/dist/
 
 *.lprof
 videos/
