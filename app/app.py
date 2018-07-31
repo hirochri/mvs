@@ -9,10 +9,7 @@ import cv2
 
 # Define server app.
 app = Flask(__name__)
-cors = CORS(app, resources={"/api/*": {"origins": "*"}})
-
-upload_folder = '../data/uploads/'
-app.config['UPLOAD_FOLDER'] = upload_folder
+cors = CORS(app, resources={"/api/*": {"origins": "*"}}) #XXX for local testing
 
 @app.route("/api/")
 def hello_world():
@@ -41,7 +38,6 @@ def send_email():
 
   return '', 200
 
-upload_folder = '../data/uploads/'
 
 @app.route("/api/video/upload", methods=['POST'])
 def video_upload():
@@ -51,7 +47,7 @@ def video_upload():
 
   uuid = request.form['uuid']
   print(uuid)
-  filename = upload_folder + uuid + '.mp4'
+  filename = get_upload_folder() + uuid + '.mp4'
   file = request.files['file']
   file.save(filename)
 
@@ -60,7 +56,7 @@ def video_upload():
   while not success:
     success, frame = cap.read()
 
-  cv2.imwrite(upload_folder + uuid + '.thumbnail.jpg', frame)
+  cv2.imwrite(get_upload_folder() + uuid + '.thumbnail.jpg', frame)
   fps = int(cap.get(cv2.CAP_PROP_FPS))
 
   return str(fps), 200
@@ -71,7 +67,7 @@ def video_upload():
 @app.route("/api/video/getall", methods=['GET'])
 def video_getall():
   uuids = []
-  for filename in os.listdir(upload_folder):
+  for filename in os.listdir(get_upload_folder()):
     uuid = filename.split('.')[0]
     uuids.append(uuid)
 
@@ -80,7 +76,7 @@ def video_getall():
 @app.route("/api/video/remove/<uuid>", methods=['DELETE'])
 def video_remove(uuid):
   filename = '.'.join([uuid, 'mp4'])
-  full_path = upload_folder + '/' + filename
+  full_path = get_upload_folder() + filename
 
   if os.path.exists(full_path):
     os.remove(full_path)
@@ -93,7 +89,7 @@ def video_process(uuid):
   #TODO file check abstraction
   #Keep track of already processed vs allow reprocessing with different options?
   filename = '.'.join([uuid, 'mp4'])
-  full_path = upload_folder + '/' + filename
+  full_path = get_upload_folder() + filename
   print('process', full_path)
   data = request.get_json()
   rate, option = data['samplingRate'], data['samplingOption']
@@ -128,7 +124,10 @@ def testfunc():
 
 #Workaround for now
 def get_db_name():
-  return "localhost" if app.debug else "mongo-database"
+  return "localhost" if app.debug else "mongo"
+
+def get_upload_folder():
+  return '../data/uploads/' if app.debug else '/usr/share/nginx/media/'
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=3000)
+  app.run(debug=True, host="0.0.0.0", port=3000)

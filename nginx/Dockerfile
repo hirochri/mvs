@@ -5,6 +5,8 @@ RUN apt-get update && \
     apt-get install -y gnupg2 && \
     curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     apt-get install -y nodejs
+#Create folder for videos/images
+RUN mkdir /usr/share/nginx/media
 #Grab nginx/babel/webpack configs
 COPY modified_nginx.conf /etc/nginx/nginx.conf
 COPY mvs_website/.babelrc /mvs_website/.babelrc

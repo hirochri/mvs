@@ -1,21 +1,20 @@
 #Ports and volumes map HOST:CONTAINER
+#Everything in docker-compose file is on same network by default, can talk to each other using service name
+#Links are deprecated and replaced by networks
+#Service names used if container names aren't
 
 version: "3.2"
 services:
   app:
-    container_name: flask-server
     restart: unless-stopped
     build: 
       context: ./app
       dockerfile: Dockerfile
     expose:
       - "9000"
-    links:
-      - mongo
     volumes:
       - ./data:/data
   mongo:
-    container_name: mongo-database
     restart: unless-stopped
     image: mongo:latest
     volumes:
@@ -23,15 +22,9 @@ services:
     ports:
       - "27017:27017"
   nginx:
-    container_name: nginx-reverse-proxy
     restart: unless-stopped
     build: 
       context: ./nginx
       dockerfile: Dockerfile
-    #image: nginx:latest #Since build is specified, it will name the resulting build this and overwrite stuff
-    links:
-      - app
-        #volumes:
-      #- ./data/static/html:/usr/share/nginx/html
     ports:
       - "80:80"
