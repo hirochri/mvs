@@ -42,6 +42,9 @@
 <script>
 import axios from 'axios'
 
+var mode = process.env.NODE_ENV || 'development'
+var api_origin = (mode === 'production' ? '' : 'http://127.0.0.1:3000')
+
 export default {
     data () {
         return {
@@ -59,8 +62,8 @@ export default {
     props: ['file'],
     computed: {
         thumbnailSource: function() {
-            //Python server running in /data/uploads until ngnix serves static
-            return "http://127.0.0.1:8888/" + this.file.upload.uuid + ".thumbnail.jpg"
+            //Will break if testing/debugging outside of dockerland
+            return api_origin + "/" + this.file.upload.uuid + "/thumbnail.jpg"
         }
     },
     methods: {
@@ -73,7 +76,7 @@ export default {
             this.processing = true
 
             console.log(this.file.upload.uuid)
-            axios.post('http://127.0.0.1:3000/api/video/process/' + this.file.upload.uuid, {
+            axios.post(api_origin + '/api/video/process/' + this.file.upload.uuid, {
                 samplingRate: this.samplingRate,
                 samplingOption: this.samplingOptionSelected
             })

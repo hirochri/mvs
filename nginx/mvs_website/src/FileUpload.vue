@@ -16,12 +16,16 @@ import vueDropzone from "vue2-dropzone"
 import FileCard from './FileCard.vue'
 import axios from 'axios'
 
+var mode = process.env.NODE_ENV || 'development'
+var api_origin = (mode === 'production' ? '' : 'http://127.0.0.1:3000')
+//Nginx sends anything with /api/ to the app container due to config
+
 export default {
     data () {
         return {
             current_files: [],
             dropOptions: {
-                url: "http://127.0.0.1:3000/api/video/upload",
+                url: api_origin + "/api/video/upload",
                 maxFilesize: 50, //mb,
                 maxFiles: 10,
                 addRemoveLinks: true,
@@ -43,7 +47,7 @@ export default {
                 return file.upload.uuid !== uuid
             })
 
-            axios.delete('http://127.0.0.1:3000/api/video/remove/' + uuid)
+            axios.delete(api_origin + '/api/video/remove/' + uuid)
             .then(res => {
                 console.log(res)
             })

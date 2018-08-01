@@ -2,19 +2,7 @@
 <div id="app">
     <v-app>
         <menu-bar></menu-bar>
-        <!--
-        <VuePerfectScrollbar class="scroll-area">
-            <keep-alive>
-                <router-view></router-view>
-            </keep-alive>
-        </VuePerfectScrollbar>
-        -->
-        <div v-bar>
-        <div>
-                <router-view></router-view>
-        </div>
-        </div>
-
+        <router-view></router-view>
         <bottom-bar></bottom-bar>
     </v-app>
 </div>
@@ -23,7 +11,6 @@
 <script>
 import MenuBar from './MenuBar.vue'
 import BottomBar from './BottomBar.vue'
-import VuePerfectScrollbar from 'vue-perfect-scrollbar'
 
 export default {
     data () {
@@ -33,7 +20,6 @@ export default {
     components: {
         'menu-bar': MenuBar, //Tag -> now registered component mapping
         'bottom-bar': BottomBar,
-        'VuePerfectScrollbar': VuePerfectScrollbar,
     }
 }
 </script>

@@ -14,8 +14,6 @@ import FileUpload from'./FileUpload.vue'
 import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import 'vue2-dropzone/dist/vue2Dropzone.css'
-import Vuebar from 'vuebar'
-Vue.use(Vuebar)
 
 Vue.use(Vuetify)
 Vue.use(VueRouter)

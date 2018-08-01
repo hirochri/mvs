@@ -9,7 +9,7 @@ saved_model/
 *.sw*
 *.mp4
 node_modules/
-data/uploads
+data/
 nginx/mvs_website/dist/
 
 *.lprof

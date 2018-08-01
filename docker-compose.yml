@@ -13,7 +13,7 @@ services:
     expose:
       - "9000"
     volumes:
-      - ./data:/data
+      - media-volume:/data/media
   mongo:
     restart: unless-stopped
     image: mongo:latest
@@ -28,3 +28,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+    volumes:
+      - media-volume:/data/media
+volumes:
+  media-volume:

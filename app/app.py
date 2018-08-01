@@ -6,18 +6,24 @@ import yagmail
 import os
 import time
 import cv2
+import shutil
 
 # Define server app.
 app = Flask(__name__)
 cors = CORS(app, resources={"/api/*": {"origins": "*"}}) #XXX for local testing
 
+def get_media_collection():
+  hostname = "localhost" if app.debug else "mongo"
+  client = MongoClient(hostname, 27017)
+  return client.app_database.media
+
 @app.route("/api/")
 def hello_world():
-  users = MongoClient(get_db_name(), 27017).demo.users
-  users.insert_one({"username": "lightscalar"})
-  users.insert_one({"username": "hirochri"})
+  media = get_media_collection()
+  media.insert_one({"username": "lightscalar"})
+  media.insert_one({"username": "hirochri"})
 
-  return get_db_name() + ' ' + str(users.count()) + ' API:Hello World from Flask'
+  return str(media.count()) + ' Media insertions'
 
 @app.route("/api/contact/", methods=['POST'])
 def send_email():
@@ -38,70 +44,75 @@ def send_email():
 
   return '', 200
 
-
-@app.route("/api/video/upload", methods=['POST'])
-def video_upload():
-  #TODO store uploaded videos and results by .. user?
-  #Get videos grouped together from same upload somehow
-  #Multiple files can be sent in one request
-
-  uuid = request.form['uuid']
-  print(uuid)
-  filename = get_upload_folder() + uuid + '.mp4'
-  file = request.files['file']
-  file.save(filename)
+def save_thumbnail(uuid):
+  filename = get_media_folder() + uuid + '/original.mp4'
 
   cap = cv2.VideoCapture(filename)
   success, frame = cap.read()
   while not success:
     success, frame = cap.read()
 
-  cv2.imwrite(get_upload_folder() + uuid + '.thumbnail.jpg', frame)
+  cv2.imwrite(get_media_folder() + uuid + '/thumbnail.jpg', frame)
   fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+  return fps
+
+#Curl with form data and file
+#curl -F 'file=@<filename>' -F 'form_key=form_value' <ip_addr>
+
+@app.route("/api/video/upload", methods=['POST'])
+def video_upload():
+  #Download video file
+  uuid = request.form['uuid']
+  os.mkdir(get_media_folder() + uuid)
+  filename = get_media_folder() + uuid + '/original.mp4'
+  file = request.files['file']
+  file.save(filename)
+
+  #Grab thumbnail
+  fps = save_thumbnail(uuid)
+
+  #Store info in database
+  media = get_media_collection()
+  doc = {
+      'uuid': uuid,
+      }
+
+  media.insert_one(doc)
 
   return str(fps), 200
 
-#TODO better folder structure, mark if original or processed
-#By user id or something?
-
-@app.route("/api/video/getall", methods=['GET'])
-def video_getall():
-  uuids = []
-  for filename in os.listdir(get_upload_folder()):
-    uuid = filename.split('.')[0]
-    uuids.append(uuid)
-
-  return json.dumps(uuids), 200
-
 @app.route("/api/video/remove/<uuid>", methods=['DELETE'])
 def video_remove(uuid):
-  filename = '.'.join([uuid, 'mp4'])
-  full_path = get_upload_folder() + filename
+  media = get_media_collection()
+  query = {'uuid': uuid}
 
-  if os.path.exists(full_path):
-    os.remove(full_path)
-    return 'Removed ' + filename, 200
+  if media.find_one(query):
+    media.delete_one(query)
+    shutil.rmtree(get_media_folder() + uuid)
+    return 'Removed ' + uuid, 200
   else:
-    return filename + ' not found and not removed', 404
+    return uuid + ' not found and not removed', 404
 
+#Ex test command: curl -H 'Content-Type: application/json' -X POST -d '{"samplingRate": 5, "samplingOption": 0}' 192.168.2.8:3000/api/video/process/hirotest2
 @app.route("/api/video/process/<uuid>", methods=["POST"])
 def video_process(uuid):
   #TODO file check abstraction
   #Keep track of already processed vs allow reprocessing with different options?
-  filename = '.'.join([uuid, 'mp4'])
-  full_path = get_upload_folder() + filename
-  print('process', full_path)
-  data = request.get_json()
-  rate, option = data['samplingRate'], data['samplingOption']
-  print(rate, option)
+  media = get_media_collection()
+  query = {'uuid': uuid}
 
   time.sleep(3)
 
-  if os.path.exists(full_path):
+  if media.find_one(query):
+    filename = get_media_folder() + uuid + '/processed.mp4'
+    data = request.get_json()
+    rate, option = data['samplingRate'], data['samplingOption']
+    print(rate, option)
     print('Processing', uuid)
-    return 'Processed ' + filename, 200
+    return 'Processed ' + uuid, 200
   else:
-    return filename + ' not found and not processed', 404
+    return uuid + ' not found and not processed', 404
 
 '''
 Video stages -> uploaded, processed, 
@@ -115,19 +126,8 @@ TODO
 
 '''
 
-@app.route("/api/test/", methods=['GET'])
-def testfunc():
-  response = make_response(send_file('../data/uploads/test.mp4', mimetype='video/mp4'))
-  response.headers['Content-Disposition'] = 'inline'
-
-  return response
-
-#Workaround for now
-def get_db_name():
-  return "localhost" if app.debug else "mongo"
-
-def get_upload_folder():
-  return '../data/uploads/' if app.debug else '/usr/share/nginx/media/'
+def get_media_folder():
+  return '../data/media/' if app.debug else '/data/media/'
 
 if __name__ == "__main__":
   app.run(debug=True, host="0.0.0.0", port=3000)
