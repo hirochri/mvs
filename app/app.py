@@ -7,6 +7,7 @@ import os
 import time
 import cv2
 import shutil
+import math
 
 # Define server app.
 app = Flask(__name__)
@@ -54,8 +55,10 @@ def save_thumbnail(uuid):
 
   cv2.imwrite(get_media_folder() + uuid + '/thumbnail.jpg', frame)
   fps = int(cap.get(cv2.CAP_PROP_FPS))
+  num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+  duration = int(math.ceil(float(num_frames) / float(fps)))
 
-  return fps
+  return fps, duration
 
 #Curl with form data and file
 #curl -F 'file=@<filename>' -F 'form_key=form_value' <ip_addr>
@@ -70,7 +73,8 @@ def video_upload():
   file.save(filename)
 
   #Grab thumbnail
-  fps = save_thumbnail(uuid)
+  fps, duration = save_thumbnail(uuid)
+  print(fps, duration)
 
   #Store info in database
   media = get_media_collection()
@@ -80,7 +84,9 @@ def video_upload():
 
   media.insert_one(doc)
 
-  return str(fps), 200
+  ret = {'fps': str(fps), 'duration': str(duration)}
+
+  return json.dumps(ret), 200
 
 @app.route("/api/video/remove/<uuid>", methods=['DELETE'])
 def video_remove(uuid):

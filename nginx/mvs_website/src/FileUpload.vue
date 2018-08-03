@@ -1,8 +1,8 @@
 <template>
 	<div id="file-upload">
 		<vue-dropzone id="dropzone" ref="dzone" v-bind:options="dropOptions"></vue-dropzone>
-		<v-container fluid grid-list-md px-2>
-			<v-layout row wrap flex>
+		<v-container fluid grid-list-md>
+			<v-layout row wrap flex align-center>
 				<file-card v-for="cf in current_files" v-bind:key="cf.upload.uuid" v-bind:file="cf" v-on:remove-file="removeFunc"></file-card>
 			</v-layout>
 		</v-container>
@@ -52,8 +52,12 @@ export default {
 				})
 		},
 		successFunc: function(file, response) {
-			console.log(file)
-			file.originalFps = response
+      var jresponse = JSON.parse(response)
+			console.log(response)
+			console.log(jresponse)
+			file.originalFps = jresponse['fps']
+      file.originalDuration = jresponse['duration']
+			console.log(file.originalFps)
 			this.current_files.push(file)
 			this.$refs.dzone.removeFile(file)
 		},

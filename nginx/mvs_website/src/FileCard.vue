@@ -1,10 +1,13 @@
 <template>
-	<div id="file-card">
+	<div id="file-card" class="card-div">
 		<v-card>
 			<div class="imgcontainer">
 				<v-card-media v-bind:src="thumbnailSource" height="200px"></v-card-media>
 				<div class="centered">
 					<h3 class="headline mb-0">{{file.upload.filename}}</h3>
+				</div>
+				<div class="bottom-right">
+					<h3 class="headline mb-0">{{durationReadable}}</h3>
 				</div>
 			</div>
 
@@ -51,7 +54,13 @@ export default {
 				//Will break if testing/debugging outside of dockerland since nothing is serving the images
 				return "/" + this.file.upload.uuid + "/thumbnail.jpg"
 			}
-		}
+		},
+    durationReadable: function () {
+      var date = new Date(null)
+      date.setSeconds(this.file.originalDuration)
+      var timeString = date.toISOString().substr(11, 8)
+      return timeString
+    }
 	},
 	methods: {
 		confirmRemoveFunc: function() {
@@ -98,6 +107,18 @@ export default {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
+.card-div {
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
+
+.bottom-right {
+    position: absolute;
+    bottom: 8px;
+    right: 16px;
 }
 
 
