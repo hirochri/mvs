@@ -10,12 +10,6 @@
         </div>
     </div>
 
-    <!--
-        <v-card-title primary-title>
-        <h3 class="headline mb-0">{{file.upload.filename}}</h3>
-        </v-card-title>
-    -->
-
     <v-flex xs12 sm12 d-flex>
     <p>Processing Options</p>
     <v-text-field v-bind:placeholder="originalSamplingRate" v-model="samplingRate"></v-text-field>
@@ -43,7 +37,7 @@
 import axios from 'axios'
 
 var mode = process.env.NODE_ENV || 'development'
-var api_origin = (mode === 'production' ? '' : 'http://127.0.0.1:3000')
+var api_origin = (mode === 'production' ? '' : 'http://' + process.env.DEV_IP + ':3000')
 
 export default {
     data () {
@@ -62,8 +56,13 @@ export default {
     props: ['file'],
     computed: {
         thumbnailSource: function() {
-            //Will break if testing/debugging outside of dockerland
-            return api_origin + "/" + this.file.upload.uuid + "/thumbnail.jpg"
+            if (mode === 'development') {
+              //Requires http server running in ../data/media (python -m http.server 8080)
+              return 'http://' + process.env.DEV_IP + ':8080/' + this.file.upload.uuid + "/thumbnail.jpg"
+            } else {
+              //Will break if testing/debugging outside of dockerland since nothing is serving the images
+              return "/" + this.file.upload.uuid + "/thumbnail.jpg"
+            }
         }
     },
     methods: {
@@ -77,8 +76,8 @@ export default {
 
             console.log(this.file.upload.uuid)
             axios.post(api_origin + '/api/video/process/' + this.file.upload.uuid, {
-                samplingRate: this.samplingRate,
-                samplingOption: this.samplingOptionSelected
+                samplingRate: parseInt(this.samplingRate),
+                samplingOption: parseInt(this.samplingOptionSelected)
             })
                 .then(function(response) {
                     //Handle success

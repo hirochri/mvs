@@ -17,8 +17,9 @@ import FileCard from './FileCard.vue'
 import axios from 'axios'
 
 var mode = process.env.NODE_ENV || 'development'
-var api_origin = (mode === 'production' ? '' : 'http://127.0.0.1:3000')
+var api_origin = (mode === 'production' ? '' : 'http://' + process.env.DEV_IP + ':3000')
 //Nginx sends anything with /api/ to the app container due to config
+//Using localhost works with flask + frontend, but mongo also needs to be running locally
 
 export default {
     data () {
@@ -54,7 +55,7 @@ export default {
         },
         successFunc: function(file, response) {
             console.log(file)
-            file.originalFps = parseInt(response)
+            file.originalFps = response
             this.current_files.push(file)
             this.$refs.dzone.removeFile(file)
         },
