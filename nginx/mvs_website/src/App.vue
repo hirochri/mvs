@@ -1,9 +1,11 @@
 <template>
 <div id="app">
     <v-app>
-        <menu-bar></menu-bar>
+      <menu-bar></menu-bar>
+      <v-flex>
         <router-view></router-view>
-        <bottom-bar></bottom-bar>
+      </v-flex>
+      <bottom-bar></bottom-bar>
     </v-app>
 </div>
 </template>
@@ -24,4 +26,4 @@ export default {
 }
 </script>
 
-<style></style>
+<style> </style>

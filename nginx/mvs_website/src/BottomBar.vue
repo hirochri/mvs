@@ -1,6 +1,6 @@
 <template>
 <div id="bottom-bar">
-    <v-footer height="auto" v-bind:absolute="true">
+  <v-footer height="auto">
         <v-container>
             <v-layout>
             <v-flex xs4>

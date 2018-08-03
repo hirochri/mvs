@@ -1,14 +1,12 @@
 <template>
-<div id="file-upload">
-    <p>File Upload</p>
-    <vue-dropzone id="dropzone" ref="dzone" v-bind:options="dropOptions"></vue-dropzone>
-    <div>
-        <p>Current files</p>
-        <div>
-            <file-card v-for="cf in current_files" v-bind:key="cf.upload.uuid" v-bind:file="cf" v-on:remove-file="removeFunc"></file-card>
-        </div>
-    </div>
-</div>
+	<div id="file-upload">
+		<vue-dropzone id="dropzone" ref="dzone" v-bind:options="dropOptions"></vue-dropzone>
+		<v-container fluid grid-list-md px-2>
+			<v-layout row wrap flex>
+				<file-card v-for="cf in current_files" v-bind:key="cf.upload.uuid" v-bind:file="cf" v-on:remove-file="removeFunc"></file-card>
+			</v-layout>
+		</v-container>
+	</div>
 </template>
 
 <script>
@@ -22,47 +20,51 @@ var api_origin = (mode === 'production' ? '' : 'http://' + process.env.DEV_IP + 
 //Using localhost works with flask + frontend, but mongo also needs to be running locally
 
 export default {
-    data () {
-        return {
-            current_files: [],
-            dropOptions: {
-                url: api_origin + "/api/video/upload",
-                maxFilesize: 50, //mb,
-                maxFiles: 10,
-                addRemoveLinks: true,
-                parallelUploads: 2,
-                sending: function(file, xhr, formData){
-                    formData.append('uuid', file.upload.uuid);
-                },
-                success: this.successFunc,
-            },
-        }
-    },
-    components: {
-        'vueDropzone': vueDropzone,
-        'file-card': FileCard,
-    },
-    methods: {
-        removeFunc: function(uuid) {
-            this.current_files = this.current_files.filter(function(file) {
-                return file.upload.uuid !== uuid
-            })
+	data () {
+		return {
+			current_files: [],
+			dropOptions: {
+				url: api_origin + "/api/video/upload",
+				maxFilesize: 100, //mb, #nginx also has 100mb limit
+				maxFiles: 10,
+				addRemoveLinks: true,
+				parallelUploads: 2,
+				sending: function(file, xhr, formData){
+					formData.append('uuid', file.upload.uuid);
+				},
+				success: this.successFunc,
+			},
+		}
+	},
+	components: {
+		'vueDropzone': vueDropzone,
+		'file-card': FileCard,
+	},
+	methods: {
+		removeFunc: function(uuid) {
+			this.current_files = this.current_files.filter(function(file) {
+				return file.upload.uuid !== uuid
+			})
 
-            axios.delete(api_origin + '/api/video/remove/' + uuid)
-            .then(res => {
-                console.log(res)
-            })
-        },
-        successFunc: function(file, response) {
-            console.log(file)
-            file.originalFps = response
-            this.current_files.push(file)
-            this.$refs.dzone.removeFile(file)
-        },
-    }
+			axios.delete(api_origin + '/api/video/remove/' + uuid)
+				.then(res => {
+					console.log(res)
+				})
+		},
+		successFunc: function(file, response) {
+			console.log(file)
+			file.originalFps = response
+			this.current_files.push(file)
+			this.$refs.dzone.removeFile(file)
+		},
+	}
 }
 </script>
 
 <style></style>
+
+
+
+
 
 
