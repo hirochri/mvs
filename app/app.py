@@ -80,6 +80,7 @@ def video_upload():
   media = get_media_collection()
   doc = {
       'uuid': uuid,
+      'processed': [] #filenames
       }
 
   media.insert_one(doc)
@@ -93,12 +94,12 @@ def video_remove(uuid):
   media = get_media_collection()
   query = {'uuid': uuid}
 
-  if media.find_one(query):
+  if not media.find_one(query):
+    return uuid + ' not found and not removed', 404
+  else:
     media.delete_one(query)
     shutil.rmtree(get_media_folder() + uuid)
     return 'Removed ' + uuid, 200
-  else:
-    return uuid + ' not found and not removed', 404
 
 #Ex test command: curl -H 'Content-Type: application/json' -X POST -d '{"samplingRate": 5, "samplingOption": 0}' 192.168.2.8:3000/api/video/process/hirotest2
 @app.route("/api/video/process/<uuid>", methods=["POST"])
@@ -107,18 +108,38 @@ def video_process(uuid):
   #Keep track of already processed vs allow reprocessing with different options?
   media = get_media_collection()
   query = {'uuid': uuid}
+  doc = media.find_one(query)
+  print(doc)
 
-  time.sleep(3)
-
-  if media.find_one(query):
+  if not doc:
+    return uuid + ' not found and not processed', 404
+  else:
     filename = get_media_folder() + uuid + '/processed.mp4'
     data = request.get_json()
     rate, option = data['samplingRate'], data['samplingOption']
     print(rate, option)
     print('Processing', uuid)
+
+    
+    #TODO Hash function names 
+    new_processed_file = '_'.join([str(rate), str(option)]) + '.processed.mp4'
+    if new_processed_file not in doc['processed']:
+      media.update_one({'_id': doc['_id']},{'$push': {'processed': new_processed_file}}, upsert=False)
+      #Call processing func
+
     return 'Processed ' + uuid, 200
+
+@app.route("/api/video/get_processed/<uuid>", methods=["GET"])
+def video_get_processed(uuid):
+  media = get_media_collection()
+  query = {'uuid': uuid}
+  doc = media.find_one(query)
+
+  if not doc:
+    return json.dumps([]), 404
   else:
-    return uuid + ' not found and not processed', 404
+    filenames = ['/' + uuid + '/' + filename for filename in doc['processed']]
+    return json.dumps(filenames), 200
 
 '''
 Video stages -> uploaded, processed, 
