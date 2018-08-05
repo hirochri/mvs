@@ -9,7 +9,6 @@ saved_model/
 *.sw*
 *.mp4
 node_modules/
-data/
 nginx/mvs_website/dist/
 
 *.lprof
@@ -24,8 +23,6 @@ __pycache__/
 *.pyc
 *.py[cod]
 *$py.class
-
-data/db
 
 # C extensions
 *.so
