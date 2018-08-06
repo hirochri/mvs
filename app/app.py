@@ -129,12 +129,11 @@ def video_process(uuid):
       media.update_one({'_id': doc['_id']},{'$push': {'processed': new_processed_file}}, upsert=False)
       input_filename = get_media_folder() + uuid + '/original.mp4'
       output_filename = get_media_folder() + uuid + '/' + new_processed_file
-      output_fps = 10
       #Call processing func
       print(new_processed_file)
       print(output_filename)
       vp = VideoProcessor(funcs)
-      vp.process_video(input_filename, output_filename, rate, option, output_fps)
+      vp.process_video(input_filename, output_filename, rate, option) #Has standard output fps of 10
 
     print('Reached end')
     return 'Processed ' + uuid, 200

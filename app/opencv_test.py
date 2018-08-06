@@ -60,13 +60,15 @@ class VideoProcessor:
       #Release the capture
       cap.release()
 
-    return dimensions, generator
+    return dimensions, fps, generator
 
-  def process_video(self, input_filename, output_filename, sampling_rate, sampling_time, output_fps=10):
+  def process_video(self, input_filename, output_filename, sampling_rate, sampling_time, output_fps=None):
     #TODO decide how to work with filenames/folders.. only pass uuids?
 
-    frame_dimensions, frame_generator = self.create_frame_generator(input_filename, sampling_rate, sampling_time)
+    frame_dimensions, original_fps, frame_generator = self.create_frame_generator(input_filename, sampling_rate, sampling_time)
+    output_fps = original_fps if output_fps == None else output_fps
 
+    #XXX will need to tweak with colors and codecs..
     cmd = [
         'ffmpeg', '-y', #Overwrite input files
         '-f', 'rawvideo', 
@@ -106,4 +108,4 @@ if __name__ == '__main__':
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
   #vp = VideoProcessor([VideoFunctions.foo])
   vp = VideoProcessor(funcs)
-  vp.process_video('control_2.mp4', 'hirotest.mp4', 5, 0, 5)
+  vp.process_video('control_2.mp4', 'hirotest.mp4', 10, 0)

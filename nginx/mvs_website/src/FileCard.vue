@@ -16,7 +16,6 @@
       <v-select v-bind:items="samplingOptions" v-model="samplingOptionSelected" ></v-select>
 
       <v-container fluid>
-        {{selectedVideoFunctions}}
         <v-checkbox v-for="vfunc in videoFunctions" v-bind:key="vfunc" v-model="selectedVideoFunctions" v-bind:label="vfunc" v-bind:value="vfunc"></v-checkbox>
       </v-container>
 
