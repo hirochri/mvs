@@ -62,9 +62,8 @@ class VideoProcessor:
 
     return dimensions, generator
 
-  def process_video(self, input_filename, sampling_rate, sampling_time, output_fps=10):
+  def process_video(self, input_filename, output_filename, sampling_rate, sampling_time, output_fps=10):
     #TODO decide how to work with filenames/folders.. only pass uuids?
-    output_filename = 'hirotest.mp4'
 
     frame_dimensions, frame_generator = self.create_frame_generator(input_filename, sampling_rate, sampling_time)
 
@@ -84,7 +83,6 @@ class VideoProcessor:
     p = Popen(cmd, stdin=PIPE)
 
     for num, frame in frame_generator():
-      print('NUM', num)
       #Generate data for sampled frame
 
       #Apply functions to sampled frame
@@ -99,9 +97,13 @@ class VideoProcessor:
   def apply_functions(self, frame):
     return reduce(lambda res, func: func(res), self.funcs, frame)
 
-def flip_frame(frame):
-  return cv2.flip(frame, 0)
+class VideoFunctions:
+  def foo(frame):
+    return cv2.flip(frame, 0)
 
 if __name__ == '__main__':
-  vp = VideoProcessor([flip_frame, flip_frame])
-  vp.process_video('control_2.mp4', 5, 0, 5)
+  funcnames = ['foo']
+  funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
+  #vp = VideoProcessor([VideoFunctions.foo])
+  vp = VideoProcessor(funcs)
+  vp.process_video('control_2.mp4', 'hirotest.mp4', 5, 0, 5)

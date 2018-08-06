@@ -8,6 +8,7 @@ import time
 import cv2
 import shutil
 import math
+from opencv_test import VideoFunctions, VideoProcessor
 
 # Define server app.
 app = Flask(__name__)
@@ -114,19 +115,28 @@ def video_process(uuid):
   if not doc:
     return uuid + ' not found and not processed', 404
   else:
-    filename = get_media_folder() + uuid + '/processed.mp4'
     data = request.get_json()
     rate, option = data['samplingRate'], data['samplingOption']
+    funcs = [getattr(VideoFunctions, funcname) for funcname in data['selectedVideoFunctions']]
     print(rate, option)
+    print(funcs)
     print('Processing', uuid)
-
     
-    #TODO Hash function names 
+    #TODO Hash function names?
+    #/uuid/rate_option.processed.mp4
     new_processed_file = '_'.join([str(rate), str(option)]) + '.processed.mp4'
     if new_processed_file not in doc['processed']:
       media.update_one({'_id': doc['_id']},{'$push': {'processed': new_processed_file}}, upsert=False)
+      input_filename = get_media_folder() + uuid + '/original.mp4'
+      output_filename = get_media_folder() + uuid + '/' + new_processed_file
+      output_fps = 10
       #Call processing func
+      print(new_processed_file)
+      print(output_filename)
+      vp = VideoProcessor(funcs)
+      vp.process_video(input_filename, output_filename, rate, option, output_fps)
 
+    print('Reached end')
     return 'Processed ' + uuid, 200
 
 @app.route("/api/video/get_processed/<uuid>", methods=["GET"])
@@ -140,6 +150,13 @@ def video_get_processed(uuid):
   else:
     filenames = ['/' + uuid + '/' + filename for filename in doc['processed']]
     return json.dumps(filenames), 200
+
+@app.route("/api/video/functions/", methods=["GET"])
+def video_get_functions():
+  #Returns function names
+  return json.dumps([func for func in dir(VideoFunctions) if callable(getattr(VideoFunctions, func)) and not func.startswith("__")]), 200
+
+
 
 '''
 Video stages -> uploaded, processed, 

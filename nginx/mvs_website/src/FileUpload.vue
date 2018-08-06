@@ -53,11 +53,8 @@ export default {
 		},
 		successFunc: function(file, response) {
       var jresponse = JSON.parse(response)
-			console.log(response)
-			console.log(jresponse)
 			file.originalFps = jresponse['fps']
       file.originalDuration = jresponse['duration']
-			console.log(file.originalFps)
 			this.current_files.push(file)
 			this.$refs.dzone.removeFile(file)
 		},
