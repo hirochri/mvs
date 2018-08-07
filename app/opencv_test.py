@@ -6,6 +6,10 @@ from werkzeug.datastructures import FileStorage
 import tempfile
 from subprocess import Popen, PIPE
 from functools import reduce
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+import random
 
 class VideoProcessor:
   def __init__(self, funcs):
@@ -49,6 +53,7 @@ class VideoProcessor:
     def generator():
       for num in range(num_frames):
         #Generate data based on all frames
+        self.generated_data['frame_count'] = self.generated_data.get('frame_count', 0) + 1
 
         frame = cap.read()[1]
 
@@ -68,6 +73,11 @@ class VideoProcessor:
     frame_dimensions, original_fps, frame_generator = self.create_frame_generator(input_filename, sampling_rate, sampling_time)
     output_fps = original_fps if output_fps == None else output_fps
 
+    #0. Potentially tweak output size to accomodate frames being put together
+    #Adjust height
+    original_dimensions = frame_dimensions
+    frame_dimensions = (frame_dimensions[0], frame_dimensions[1] * 2)
+
     #XXX will need to tweak with colors and codecs..
     cmd = [
         'ffmpeg', '-y', #Overwrite input files
@@ -85,27 +95,55 @@ class VideoProcessor:
     p = Popen(cmd, stdin=PIPE)
 
     for num, frame in frame_generator():
-      #Generate data for sampled frame
+      #1. Generate data from sampled frame
 
       #Apply functions to sampled frame
       frame = self.apply_functions(frame)
 
+      #2. Generate data from modified frame
+
       #Frame composition stuff?
+      #3. Potentially create graphs and add them to frames
+
+      #Vertically stack frames -> also needs to change image dimensions
+      print(num)
+      graph = random_plot(original_dimensions)
+      print(num, 'Graph done')
+      frame = np.concatenate((frame, graph), axis=0)
+      print(num, 'Concat done')
 
       p.stdin.write(frame.tostring())
 
+    print('XXX')
+    print(self.generated_data)
+    print('XXX')
     #XXX read up on how Popen knows when stdin ends
 
   def apply_functions(self, frame):
     return reduce(lambda res, func: func(res), self.funcs, frame)
 
 class VideoFunctions:
-  def foo(frame):
+  def flip(frame):
     return cv2.flip(frame, 0)
 
+def random_plot(dimensions):
+  rand_arr = [random.random() for _ in range(50)]
+  w, h = dimensions
+  my_dpi = 150
+  fig = plt.figure(figsize=(w/my_dpi, h/my_dpi), dpi=my_dpi)
+  fig.add_subplot()
+  ax = fig.subplots()
+  ax.plot(rand_arr)
+  fig.canvas.draw()
+  #plt.show()
+  ret = np.array(fig.canvas.renderer._renderer)
+  ret_without_alpha = ret[:,:,:3] #hacky RGBA->RGB so that dimensions match frame dimensions (ex: frame.shape == graph.shape)
+  plt.close(fig)
+  return ret_without_alpha
+
 if __name__ == '__main__':
-  funcnames = ['foo']
+  funcnames = ['flip']
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
-  #vp = VideoProcessor([VideoFunctions.foo])
+  #vp = VideoProcessor([VideoFunctions.flip])
   vp = VideoProcessor(funcs)
   vp.process_video('control_2.mp4', 'hirotest.mp4', 10, 0)
