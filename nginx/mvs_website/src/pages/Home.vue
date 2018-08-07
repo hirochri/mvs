@@ -1,6 +1,6 @@
 <template>
 <div id="home-page">
-    <img src="../assets/mvs_main.png">
+    <img src="../assets/stem_cell.jpg">
 </div>
 </template>
 
@@ -13,6 +13,7 @@ export default {
 }
 </script>
 
-<style></style>
+<style>
+</style>
 
 
