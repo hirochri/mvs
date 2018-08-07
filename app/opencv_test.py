@@ -16,6 +16,8 @@ class VideoProcessor:
   def __init__(self, funcs):
     self.funcs = funcs
     self.generated_data = {}
+    '''
+    #Generated data
     self.colors = {
       (254, 147, 110): 'Orange',
       (253, 211, 109): 'Yellow',
@@ -23,6 +25,7 @@ class VideoProcessor:
       (71, 179, 240): 'Blue'
     }
     self.counts = {color: 0 for color in "Orange.Yellow.Green.Blue".split('.')}
+    '''
 
   def get_sampling_fps(self, sampling_rate, sampling_time):
     #sampling_time = 0 for seconds, 1 for minutes, 2 for hours
@@ -60,13 +63,17 @@ class VideoProcessor:
 
     def generator():
       for num in range(num_frames):
-        frame = cap.read()[1]
+        success, frame = cap.read()
 
         #Generate data based on all frames
+
+        '''
+        #Generated data
         self.generated_data['frame_count'] = self.generated_data.get('frame_count', 0) + 1
         frame = contour_func_count(frame, self.counts, self.colors)
+        '''
 
-        if num % sampling_modulo == 0:
+        if success and num % sampling_modulo == 0:
           yield (num, frame)
         #Frame number, frame
         #Can calculate timestamp from frame number and fps
@@ -86,6 +93,7 @@ class VideoProcessor:
     #Adjust height
     original_dimensions = frame_dimensions
     '''
+    #Composition
     frame_dimensions = (frame_dimensions[0], frame_dimensions[1] * 2)
     '''
 
@@ -109,8 +117,11 @@ class VideoProcessor:
       #1. Generate data from sampled frame
 
       #Apply functions to sampled frame
-      #frame = self.apply_functions(frame)
+      frame = self.apply_functions(frame)
+      '''
+      #Generated data
       frame = contour_func_draw(frame, self.counts, self.colors, num)
+      '''
 
       #2. Generate data from modified frame
 
@@ -119,6 +130,7 @@ class VideoProcessor:
 
       #Vertically stack frames -> also needs to change image dimensions
       '''
+      #Composition
       print(num)
       graph = random_plot(original_dimensions)
       print(num, 'Graph done')
@@ -139,6 +151,9 @@ class VideoProcessor:
 class VideoFunctions:
   def flip(frame):
     return cv2.flip(frame, 0)
+  
+  def invert(frame):
+    return cv2.bitwise_not(frame)
 
 def random_plot(dimensions):
   rand_arr = [random.random() for _ in range(50)]
@@ -156,9 +171,10 @@ def random_plot(dimensions):
   return ret_without_alpha
 
 if __name__ == '__main__':
-  funcnames = []
+  funcnames = ['invert', 'flip']
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
   #vp = VideoProcessor([VideoFunctions.flip])
   vp = VideoProcessor(funcs)
   #vp.process_video('control_2.mp4', 'hirotest.mp4', 10, 0)
-  vp.process_video('dots.mp4', 'dotstest.mp4', 5, 0)
+  #vp.process_video('dots.mp4', 'dotstest.mp4', 5, 0)
+  vp.process_video('man.mp4', 'mantest.mp4', 25, 0)
