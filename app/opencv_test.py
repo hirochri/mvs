@@ -10,6 +10,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import random
+from dots import contour_func
 
 class VideoProcessor:
   def __init__(self, funcs):
@@ -76,7 +77,9 @@ class VideoProcessor:
     #0. Potentially tweak output size to accomodate frames being put together
     #Adjust height
     original_dimensions = frame_dimensions
+    '''
     frame_dimensions = (frame_dimensions[0], frame_dimensions[1] * 2)
+    '''
 
     #XXX will need to tweak with colors and codecs..
     cmd = [
@@ -98,7 +101,8 @@ class VideoProcessor:
       #1. Generate data from sampled frame
 
       #Apply functions to sampled frame
-      frame = self.apply_functions(frame)
+      #frame = self.apply_functions(frame)
+      frame = contour_func(frame)
 
       #2. Generate data from modified frame
 
@@ -106,11 +110,13 @@ class VideoProcessor:
       #3. Potentially create graphs and add them to frames
 
       #Vertically stack frames -> also needs to change image dimensions
+      '''
       print(num)
       graph = random_plot(original_dimensions)
       print(num, 'Graph done')
       frame = np.concatenate((frame, graph), axis=0)
       print(num, 'Concat done')
+      '''
 
       p.stdin.write(frame.tostring())
 
@@ -146,4 +152,5 @@ if __name__ == '__main__':
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
   #vp = VideoProcessor([VideoFunctions.flip])
   vp = VideoProcessor(funcs)
-  vp.process_video('control_2.mp4', 'hirotest.mp4', 10, 0)
+  #vp.process_video('control_2.mp4', 'hirotest.mp4', 10, 0)
+  vp.process_video('dots.mp4', 'dotstest.mp4', 10, 0)
