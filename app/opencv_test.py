@@ -10,12 +10,19 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import random
-from dots import contour_func
+from dots import contour_func_draw, contour_func_count
 
 class VideoProcessor:
   def __init__(self, funcs):
     self.funcs = funcs
     self.generated_data = {}
+    self.colors = {
+      (254, 147, 110): 'Orange',
+      (253, 211, 109): 'Yellow',
+      (106, 227, 129): 'Green',
+      (71, 179, 240): 'Blue'
+    }
+    self.counts = {color: 0 for color in "Orange.Yellow.Green.Blue".split('.')}
 
   def get_sampling_fps(self, sampling_rate, sampling_time):
     #sampling_time = 0 for seconds, 1 for minutes, 2 for hours
@@ -53,10 +60,11 @@ class VideoProcessor:
 
     def generator():
       for num in range(num_frames):
+        frame = cap.read()[1]
+
         #Generate data based on all frames
         self.generated_data['frame_count'] = self.generated_data.get('frame_count', 0) + 1
-
-        frame = cap.read()[1]
+        frame = contour_func_count(frame, self.counts, self.colors)
 
         if num % sampling_modulo == 0:
           yield (num, frame)
@@ -102,7 +110,7 @@ class VideoProcessor:
 
       #Apply functions to sampled frame
       #frame = self.apply_functions(frame)
-      frame = contour_func(frame)
+      frame = contour_func_draw(frame, self.counts, self.colors, num)
 
       #2. Generate data from modified frame
 
@@ -148,9 +156,9 @@ def random_plot(dimensions):
   return ret_without_alpha
 
 if __name__ == '__main__':
-  funcnames = ['flip']
+  funcnames = []
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
   #vp = VideoProcessor([VideoFunctions.flip])
   vp = VideoProcessor(funcs)
   #vp.process_video('control_2.mp4', 'hirotest.mp4', 10, 0)
-  vp.process_video('dots.mp4', 'dotstest.mp4', 10, 0)
+  vp.process_video('dots.mp4', 'dotstest.mp4', 5, 0)
