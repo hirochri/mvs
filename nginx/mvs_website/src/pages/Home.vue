@@ -1,6 +1,5 @@
 <template>
 <div id="home-page">
-    <img src="../assets/stem_cell.jpg">
 </div>
 </template>
 
@@ -14,6 +13,13 @@ export default {
 </script>
 
 <style>
+#home-page {
+  height: 100%;
+  width: 100%;
+  background-image: url("../assets/stem_cell.jpg");
+  background-position: center;
+  background-size: cover;
+}
 </style>
 
 

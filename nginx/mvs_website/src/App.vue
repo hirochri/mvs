@@ -2,7 +2,7 @@
 <div id="app">
     <v-app>
       <menu-bar></menu-bar>
-      <v-flex>
+      <v-flex fill-height>
         <router-view></router-view>
       </v-flex>
       <bottom-bar></bottom-bar>

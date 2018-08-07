@@ -30,7 +30,7 @@
           <v-dialog max-width="500px" v-model="dialog" @keydown.esc="dialog = false">
             <v-card>
               <v-card-title>
-                <span class="headline">Contact Us</span>
+                <span class="headline">Contact Alexis Donneys</span>
               </v-card-title>
               <v-card-text>
                 <v-form @submit.prevent="handleSubmit">
