@@ -11,36 +11,20 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import random
 from dots import contour_func_draw, contour_func_count
+from data_generator import DotDataGenerator
 
 class VideoProcessor:
-  def __init__(self, funcs):
+  def __init__(self, funcs, data_generator=None):
     self.funcs = funcs
-    self.generated_data = {}
-    '''
-    #Generated data
-    self.colors = {
-      (254, 147, 110): 'Orange',
-      (253, 211, 109): 'Yellow',
-      (106, 227, 129): 'Green',
-      (71, 179, 240): 'Blue'
-    }
-    self.counts = {color: 0 for color in "Orange.Yellow.Green.Blue".split('.')}
-    '''
+    self.dg = data_generator
 
-  def get_sampling_fps(self, sampling_rate, sampling_time):
-    #sampling_time = 0 for seconds, 1 for minutes, 2 for hours
+  def get_sampling_modulo(self, source_fps, sampling_rate, sampling_time):
+    #sampling_time = 0 for seconds, 1 for minutes, 2 for hours.. -> convert to fps
+    sampling_fps = sampling_rate / (60 ** sampling_time)
 
-    #Convert to fps
-    if sampling_time > 0:
-      sampling_fps = sampling_rate / (60 ** sampling_time)
-    else:
-      sampling_fps = sampling_rate
-
-    return sampling_fps
-
-  def get_sampling_modulo(self, source_fps, sampling_fps):
     print('Original video: {0} fps'.format(source_fps))
     print('Sampling at {0} fps'.format(sampling_fps))
+
     modulo = source_fps / sampling_fps 
     #Deal with gross numbers
     if modulo % 1 != 0: 
@@ -58,20 +42,15 @@ class VideoProcessor:
     dimensions = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
 
-    sampling_fps = self.get_sampling_fps(sampling_rate, sampling_time)
-    sampling_modulo = self.get_sampling_modulo(fps, sampling_fps)
+    sampling_modulo = self.get_sampling_modulo(fps, sampling_rate, sampling_time)
 
     def generator():
       for num in range(num_frames):
         success, frame = cap.read()
 
         #Generate data based on all frames
-
-        '''
-        #Generated data
-        self.generated_data['frame_count'] = self.generated_data.get('frame_count', 0) + 1
-        frame = contour_func_count(frame, self.counts, self.colors)
-        '''
+        if self.dg:
+          frame = self.dg.capture_data(frame)
 
         if success and num % sampling_modulo == 0:
           yield (num, frame)
@@ -118,10 +97,10 @@ class VideoProcessor:
 
       #Apply functions to sampled frame
       frame = self.apply_functions(frame)
-      '''
-      #Generated data
-      frame = contour_func_draw(frame, self.counts, self.colors, num)
-      '''
+
+      #Work with generated data
+      if self.dg:
+        frame = self.dg.utilize_data(frame)
 
       #2. Generate data from modified frame
 
@@ -139,11 +118,6 @@ class VideoProcessor:
       '''
 
       p.stdin.write(frame.tostring())
-
-    print('XXX')
-    print(self.generated_data)
-    print('XXX')
-    #XXX read up on how Popen knows when stdin ends
 
   def apply_functions(self, frame):
     return reduce(lambda res, func: func(res), self.funcs, frame)
@@ -171,10 +145,11 @@ def random_plot(dimensions):
   return ret_without_alpha
 
 if __name__ == '__main__':
-  funcnames = ['invert', 'flip']
+  funcnames = []
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
   #vp = VideoProcessor([VideoFunctions.flip])
-  vp = VideoProcessor(funcs)
+  #vp = VideoProcessor(funcs)
   #vp.process_video('control_2.mp4', 'hirotest.mp4', 10, 0)
-  #vp.process_video('dots.mp4', 'dotstest.mp4', 5, 0)
-  vp.process_video('man.mp4', 'mantest.mp4', 25, 0)
+  vp = VideoProcessor(funcs, DotDataGenerator())
+  vp.process_video('dots.mp4', 'dotstest.mp4', 10, 0)
+  #vp.process_video('man.mp4', 'mantest.mp4', 25, 0)
