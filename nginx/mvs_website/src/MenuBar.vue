@@ -27,10 +27,8 @@ export default {
         return {
             menu_items: {
                 "Home": "/",
-                "File Upload": "/fileupload",
                 "About": "/about",
-                "Services": "/services",
-                "Locations": "/locations",
+                "File Upload": "/fileupload",
                 "My Experiments": "/my-experiments",
                 "Kickstarter": "/kickstarter",
             },

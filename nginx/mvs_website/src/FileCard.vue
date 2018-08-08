@@ -29,9 +29,11 @@
 
       <v-list v-if="processedVideos.length > 0">
         <v-subheader>Processed Videos</v-subheader>
+        <v-card-text>
         <template v-for="video in processedVideos">
           <ul><a v-bind:href="video.link">{{video.name}}</a></ul>
         </template>
+        </v-card-text>
       </v-list>
 
 
