@@ -1,8 +1,3 @@
-#Ports and volumes map HOST:CONTAINER
-#Everything in docker-compose file is on same network by default, can talk to each other using service name
-#Links are deprecated and replaced by networks
-#Service names used if container names aren't
-
 version: "3.2"
 services:
   app:
