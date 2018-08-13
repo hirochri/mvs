@@ -1,7 +1,12 @@
 #!/bin/bash
 
-#Development version of the app, so we don't have to go through 
-#NGINX and gunicorn every time
+#Development version of the mongo container, so we don't have to go through NGINX and gunicorn every time
+#Can lead to docker-compose complaining about the port already being allocated
+#if the development mongo container isn't stopped beforehand
+
+#Usage:
+#bash dev_mongo.sh start
+#bash dev_mongo.sh stop
 
 if [ "$1" == "start" ]; then
   #The mongo container get destroyed upon exit

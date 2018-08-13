@@ -1,5 +1,4 @@
 FROM python:3.6
-#TODO make sure ffmpeg is installed
 RUN apt-get update && \
     apt-get -y install ffmpeg
 COPY ./requirements.txt /requirements.txt
