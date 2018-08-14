@@ -1,4 +1,4 @@
-###To run all the docker containers at once:###
+###To run all the docker containers at once:
 
 In the main directory run
 ```
@@ -10,7 +10,7 @@ And then access via the IP address (website uses default port 80)
 
 
 
-###To run everything separately for ease of development:###
+###To run everything separately for ease of development:
 
 For the API on port 3000, run this in `app/`
 ```
@@ -32,15 +32,16 @@ a webserver on port 8080 in data/media/
 python -m http.server 8080
 ```
 
-For a standalone frontend on port 8000, run this in `nginx/mvs\_website/`
-*(Make sure the ip in `nginx/mvs\_website/.env` is correct)*
+For a standalone frontend on port 8000, run this in `nginx/mvs_website/`
+*(Make sure the ip in `nginx/mvs_website/.env` is correct)*
 ```
 npm run dev
 ```
 And then access via the IP address and port 8000
 
 
-###Other notes###
+###Other notes
+
 ffmpeg encoding can vary across computers, so currently portability
 of processed videos is questionable. Running `app/video_processor.py`
 by itself will give you properly formatted videos for your machine, but
