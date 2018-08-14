@@ -12,9 +12,7 @@
     </br>
     Service Fee: $29.50 per hour for Cell experiments, MVS Use, Video Editing, Data Generation and Analysis
     </v-card-text>
-    <img src="../assets/service1.jpg">
-    <img src="../assets/service2.jpg">
-    <img src="../assets/service3.jpg">
+    <img v-for="service in serviceSources" v-bind:src="service">
 
     <v-card-text>
     <strong>Locations: </strong>
@@ -24,12 +22,33 @@
 </template>
 
 <script>
+var mode = process.env.NODE_ENV || 'development'
+var file_source = (mode === 'production') ? './assets/' : './'
+if (mode === 'development') {
+  var images = require.context('../assets/', false, /\.(jpg|png)$/)
+
+  //https://stackoverflow.com/questions/40491506/vue-js-dynamic-images-not-working
+  //https://github.com/vuejs-templates/webpack/issues/267
+  //^Some info on this puzzling problem with dynamic filenames
+}
+
 export default {
     data () {
         return {
         }
-    }
+    },
+    computed: {
+      serviceSources: function() {
+        if (mode === 'production') {
+          return [file_source + 'service1.jpg', file_source + 'service2.jpg', file_source + 'service3.jpg']
+        } else {
+          return [images(file_source + 'service1.jpg'), images(file_source + 'service2.jpg'), images(file_source + 'service3.jpg')]
+        }
+      }
+
+    },
 }
+
 </script>
 
 <style></style>

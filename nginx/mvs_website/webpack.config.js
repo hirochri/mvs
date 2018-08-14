@@ -1,6 +1,7 @@
 var path = require('path')
 var webpack = require('webpack')
 const Dotenv = require('dotenv-webpack')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: './src/main.js',
@@ -73,7 +74,7 @@ if (process.env.NODE_ENV === 'production') {
     }),
     new webpack.optimize.UglifyJsPlugin({
       sourceMap: true,
-      // For debugging during development
+      //FIXME For debugging during development
       compress: false,
       mangle: false,
       //
@@ -85,6 +86,11 @@ if (process.env.NODE_ENV === 'production') {
     }),
     new webpack.LoaderOptionsPlugin({
       minimize: true
-    })
+    }),
+    new CopyWebpackPlugin([
+      { from: 'src/assets/*', to: './assets/', flatten: true}
+
+
+    ], {})
   ])
 } 

@@ -1,7 +1,7 @@
 <template>
 <div id="">
     <v-layout row flex>
-            <img src="../assets/drosophila_logo_transparent.png">
+            <img v-bind:src="logoSource">
 
               <v-card-text>
               <strong>Drosophila Project</strong>
@@ -23,11 +23,29 @@
 </template>
 
 <script>
+var mode = process.env.NODE_ENV || 'development'
+var file_source = (mode === 'production') ? './assets/' : './'
+if (mode === 'development') {
+  var images = require.context('../assets/', false, /\.(jpg|png)$/)
+
+  //https://stackoverflow.com/questions/40491506/vue-js-dynamic-images-not-working
+  //https://github.com/vuejs-templates/webpack/issues/267
+  //^Some info on this puzzling problem with dynamic filenames
+}
 export default {
     data () {
         return {
         }
-    }
+    },
+    computed: {
+      logoSource: function() {
+        if (mode === 'production') {
+          return file_source + "drosophila_logo_transparent.png"
+        } else {
+          return images(file_source + "drosophila_logo_transparent.png")
+        }
+      }
+  }
 }
 </script>
 

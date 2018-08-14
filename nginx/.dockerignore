@@ -1,5 +1,3 @@
 mvs_website/node_modules
 mvs_website/README.md
-mvs_website/static_setup.sh
-mvs_website/dist
 *.sw*
