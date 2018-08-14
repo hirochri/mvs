@@ -8,6 +8,8 @@ saved_model/
 *.h5
 *.sw*
 *.mp4
+!nginx/mvs_website/src/assets/*
+!*.test.mp4
 node_modules/
 nginx/mvs_website/dist/
 

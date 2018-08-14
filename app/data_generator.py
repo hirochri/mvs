@@ -1,3 +1,6 @@
+#All custom data generators should follow this format
+#to be compatible with the video processor code
+
 class DataGeneratorTemplate:
   def __init__(self):
     #All data structures used internally
@@ -14,15 +17,20 @@ class DataGeneratorTemplate:
     #Needs to return frame
     pass
 
+#Example: 
+
 import cv2
 class DotDataGenerator:
   def __init__(self):
     self.counts = {color: 0 for color in "Orange.Yellow.Green.Blue".split('.')}
+
+    #Color values may change depending on what machine you are using..
+    #This is simply for example purposes, not necessarily accurate
     self.colors = {
-      (254, 147, 110): 'Orange',
-      (253, 211, 109): 'Yellow',
-      (106, 227, 129): 'Green',
-      (71, 179, 240): 'Blue'
+      (253, 145, 109): 'Orange',
+      (252, 208, 108): 'Yellow',
+      (105, 225, 128): 'Green',
+      (70, 177, 241): 'Blue'
     }
     self.frame_num = -1
 
@@ -45,6 +53,7 @@ class DotDataGenerator:
     return frame
 
   def utilize_data(self, frame):
+    print(self.counts)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     th, threshed = cv2.threshold(gray, 100, 255,cv2.THRESH_BINARY_INV|cv2.THRESH_OTSU)
     _, contours, _ = cv2.findContours(threshed,1,2)
@@ -57,7 +66,7 @@ class DotDataGenerator:
       yy = int(M["m01"] / M["m00"])
       xx = int(M["m10"] / M["m00"])
       color_tup = tuple(frame[yy][xx][::-1])
-      if color_tup in self.colors:
+      if True or color_tup in self.colors:
         frame[yy][xx] = (0, 0, 0)
         frame[yy+1][xx] = (0, 0, 0)
         frame[yy-1][xx] = (0, 0, 0)
