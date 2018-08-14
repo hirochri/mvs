@@ -1,6 +1,5 @@
 # Oliver and Hiro stuff
 *.dat
-*.txt
 *.csv
 saved_category_model/
 saved_model/
@@ -31,7 +30,6 @@ __pycache__/
 
 # Data files... for now.
 *.csv
-*.txt
 *.dat
 *.zip
 *.npy

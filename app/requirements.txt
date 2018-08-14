@@ -1,0 +1,7 @@
+gunicorn
+flask
+pymongo
+flask_cors
+yagmail
+opencv-python
+matplotlib
