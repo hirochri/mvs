@@ -144,18 +144,23 @@ def random_plot(dimensions):
   plt.close(fig)
   return ret_without_alpha
 
+### Demo functions ###
+
+#Show functionality of applying functions to frames
 def standard_run():
   funcnames = ['flip', 'invert']
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
   vp = VideoProcessor(funcs)
   vp.process_video('test_data/cells.test.mp4', 'test_data/cells.out.mp4', 10, 0)
 
+#Show functionality of combining a video and a graph
 def graph_run():
   funcnames = []
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
   vp = VideoProcessor(funcs)
   vp.process_video('test_data/cells.test.mp4', 'test_data/cells.out.mp4', 10, 0, None, True)
 
+#Show functionality of gathering data from all frames
 def data_run():
   funcnames = []
   funcs = [getattr(VideoFunctions, funcname) for funcname in funcnames]
@@ -165,4 +170,5 @@ def data_run():
 if __name__ == '__main__':
   #standard_run()
   #graph_run()
-  data_run()
+  #data_run()
+  print('Please uncomment a demo function')
