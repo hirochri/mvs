@@ -35,10 +35,6 @@
         </template>
         </v-card-text>
       </v-list>
-
-
-
-
     </v-card>
   </div>
 </template>
@@ -85,7 +81,6 @@ export default {
   mounted () {
     axios.get(api_origin + '/api/video/functions/')
       .then(function(response) { //Handle success
-        console.log(response.data)
         this.videoFunctions = response.data
       }.bind(this))
       .catch(function(error) { //Handle error
@@ -113,25 +108,24 @@ export default {
         samplingOption: parseInt(this.samplingOptionSelected),
         selectedVideoFunctions: this.selectedVideoFunctions
       })
-        .then(function(response) { //Handle success
-          // /uuid/rate_option.processed.mp4
-          var video_link = file_source + this.file.upload.uuid + "/" + this.samplingRate + "_" + this.samplingOptionSelected + ".processed.mp4"
-          var video_name = this.samplingRate + ' ' + this.samplingOptions[parseInt(this.samplingOptionSelected)].text
-          this.processedVideos.push({'link': video_link, 'name': video_name})
-        }.bind(this))
-        .catch(function(error) { //Handle error
-          if (error.response) { //Status code outside of 2xx range
-            console.log(error.response.data, error.response.status, error.response.headers)
-          } else if (error.request) { //Request made but no response received
-            console.log(error.request)
-          } else { //JS error in .then above
-            console.log('Error', error.message)
-          }
-        }.bind(this))
-        .then(function() { //Always executed
-          this.processing = false
-          this.selectedVideoFunctions = []
-        }.bind(this))
+      .then(function(response) { //Handle success
+        var video_link = file_source + this.file.upload.uuid + "/" + this.samplingRate + "_" + this.samplingOptionSelected + ".processed.mp4"
+        var video_name = this.samplingRate + ' ' + this.samplingOptions[parseInt(this.samplingOptionSelected)].text
+        this.processedVideos.push({'link': video_link, 'name': video_name})
+      }.bind(this))
+      .catch(function(error) { //Handle error
+        if (error.response) { //Status code outside of 2xx range
+          console.log(error.response.data, error.response.status, error.response.headers)
+        } else if (error.request) { //Request made but no response received
+          console.log(error.request)
+        } else { //JS error in .then above
+          console.log('Error', error.message)
+        }
+      }.bind(this))
+      .then(function() { //Always executed
+        this.processing = false
+        this.selectedVideoFunctions = []
+      }.bind(this))
     },
   }
 }

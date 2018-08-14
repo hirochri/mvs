@@ -47,9 +47,9 @@ export default {
 			})
 
 			axios.delete(api_origin + '/api/video/remove/' + uuid)
-				.then(res => {
-					console.log(res)
-				})
+      .then(res => {
+        console.log(res)
+      })
 		},
 		successFunc: function(file, response) {
       var jresponse = JSON.parse(response)

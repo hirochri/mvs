@@ -20,7 +20,7 @@ export default {
         }
     },
     components: {
-        'menu-bar': MenuBar, //Tag -> now registered component mapping
+        'menu-bar': MenuBar,
         'bottom-bar': BottomBar,
     }
 }
