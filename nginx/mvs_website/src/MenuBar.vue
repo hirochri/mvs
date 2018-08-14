@@ -6,6 +6,7 @@
         {{item}}
         </v-tab>
         <!--
+        VUEX testing
         <div color="red">
             {{$store.state.count}}
             {{evenOrOdd}}

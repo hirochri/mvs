@@ -96,14 +96,6 @@ export default {
 </script>
 
 <style>
-.fa-icon {
-  width: auto;
-  height: 2em; /* or any other relative font sizes */
-
-  /* You would have to include the following two lines to make this work in Safari */
-  max-width: 100%;
-  max-height: 100%;
-}
 </style>
 
 
