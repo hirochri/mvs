@@ -20,10 +20,10 @@ python app.py
 For a standalone mongo container on port 27017, run this in `app/`
 *(Make sure to shut it down before running docker-compose)*
 ```
-bash dev_mongo start
+bash dev_mongo.sh start
 ```
 ```
-bash dev_mongo stop
+bash dev_mongo.sh stop
 ```
 
 To serve images/videos while using all the local running stuff above, run
@@ -44,8 +44,9 @@ And then access via the IP address and port 8000
 
 ffmpeg encoding can vary across computers, so currently portability
 of processed videos is questionable. Running `app/video_processor.py`
-by itself will give you properly formatted videos for your machine, but
+by itself locally will give you properly formatted videos for your machine, but
 sometimes when working in development and production video files will be unable
 to be opened on your machine (Sometimes OSX also just needs a bit, some videos
 were originally unconvertable but then opened after a few minutes..). Thus
 the ffmpeg command will need to be tweaked before this is all prodution ready
+It might also be helpful to look at which OS the docker containers are running, etc
