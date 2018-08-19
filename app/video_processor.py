@@ -46,12 +46,13 @@ class VideoProcessor:
       for num in range(num_frames):
         success, frame = cap.read()
 
-        #Generate data based on all frames
-        if self.dg:
-          frame = self.dg.capture_data(frame)
+        if success:
+          #Generate data based on all frames
+          if self.dg:
+            frame = self.dg.capture_data(frame)
 
-        if success and num % sampling_modulo == 0:
-          yield (num, frame) #Can calculate timestamp from frame number and fps
+          if num % sampling_modulo == 0:
+            yield (num, frame) #Can calculate timestamp from frame number and fps
 
       #Release the capture
       cap.release()
